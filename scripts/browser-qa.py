@@ -149,7 +149,7 @@ try:
             page.get_by_role('textbox',name='搜索示例曲库').fill('不存在')
             expect(page.get_by_text('没有匹配的示例内容。')).to_be_visible()
             page.get_by_role('button',name='艺术家',exact=True).click()
-            expect(page.locator('.library-item b')).to_have_text('Auradio Studio')
+            expect(page.locator('.library-item b')).to_have_text('G.E.M. 邓紫棋')
             record('existing theme and sample library controls retained')
             hydrate(page,'.provider-explorer')
             page.locator('.provider-rail button').filter(has_text='QQ 音乐').click()
@@ -254,16 +254,15 @@ try:
                     expect(page.locator('.album-copy h2')).to_have_text('于是')
                     page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(700)
                     page.screenshot(path=str(OUT/'album-mobile.png'),animations='disabled',full_page=True)
-                    art=page.locator('.album-art-stage')
-                    art.evaluate("""el=>{
-                        const start=new Touch({identifier:1,target:el,clientX:250,clientY:100});
-                        const end=new Touch({identifier:1,target:el,clientX:100,clientY:102});
-                        el.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[start],changedTouches:[start]}));
-                        el.dispatchEvent(new TouchEvent('touchend',{bubbles:true,touches:[],changedTouches:[end]}));
-                    }""")
-                    assert art.evaluate('(el)=>getComputedStyle(el).touchAction')=='pan-y'
+                    art=page.locator('.cover-interaction');art.scroll_into_view_if_needed()
+                    box=art.bounding_box()
+                    page.mouse.move(box['x']+box['width']*.8,box['y']+box['height']*.5)
+                    page.mouse.down()
+                    page.mouse.move(box['x']+box['width']*.2,box['y']+box['height']*.5,steps=8)
+                    page.mouse.up()
+                    assert 'pan-y' in art.evaluate('(el)=>getComputedStyle(el).touchAction')
                     expect(page.locator('.album-room')).to_have_attribute('data-selected-album','gem')
-                    record('horizontal cover gesture advances without blocking vertical scroll')
+                    record('horizontal cover drag advances; vertical touch-scroll policy is retained')
             reduced=browser.new_context(viewport={'width':390,'height':844},reduced_motion='reduce');fixtures(reduced)
             rp=reduced.new_page();visit(rp,'experience/')
             rp.get_by_role('tab',name='选择 于是',exact=True).click()

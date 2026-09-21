@@ -50,6 +50,12 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path=shutil.which('google-chrome') or shutil.which('chromium'),headless=not args.headed,
         args=['--no-sandbox','--enable-unsafe-swiftshader','--use-angle=swiftshader','--autoplay-policy=no-user-gesture-required','--auto-accept-this-tab-capture'])
     context=browser.new_context(viewport={'width':1440,'height':1100});fixtures(context)
+    context.add_init_script("""window.__qaContexts=[];window.__qaStreams=[];
+      const Original=window.AudioContext;
+      window.AudioContext=class extends Original{constructor(...args){super(...args);window.__qaContexts.push(this)}};
+      const original=navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
+      navigator.mediaDevices.getDisplayMedia=async options=>{const stream=await original(options);window.__qaStreams.push(stream);return stream;};
+    """)
     page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.set_default_timeout(15000)
     try:
         visit(page);el=field(page);base_pixels=el.locator('canvas').screenshot()
@@ -98,6 +104,7 @@ with sync_playwright() as p:
             page.get_by_role('tab',name='选择 '+name,exact=True).click()
             page.get_by_role('button',name='打开官方试听').click()
             page.frame_locator('.official-preview iframe').locator('#start').click()
+            print('CAPTURE_SWITCH',name,page.frame_locator('.official-preview iframe').locator('audio').evaluate('(a)=>({paused:a.paused,time:a.currentTime,ready:a.readyState,duration:a.duration})'),flush=True)
             meter.scroll_into_view_if_needed()
             page.wait_for_function('Number(document.querySelector(".live-spectrum-panel canvas").dataset.rms)>.04')
         record('all three album selections share the same permission-based live-audio pipeline with test tones')
@@ -136,6 +143,12 @@ with sync_playwright() as p:
         record('no uncaught application exceptions in verified flows')
         (OUT/'checks.json').write_text(json.dumps({'checks':checks,'count':len(checks),'browser':browser.version,'errors':errors,'native_tab_capture':'real browser capture of generated test tones','songs':'not used as test audio'},ensure_ascii=False,indent=2))
     except Exception:
+        diagnostics={'frames':[],'capture':page.evaluate("({contexts:(window.__qaContexts||[]).map(c=>({state:c.state,time:c.currentTime,rate:c.sampleRate})),streams:(window.__qaStreams||[]).map(s=>s.getTracks().map(t=>({kind:t.kind,enabled:t.enabled,muted:t.muted,state:t.readyState,settings:t.getSettings()}))),meters:Array.from(document.querySelectorAll('.spectrum-strip canvas')).map(e=>({rms:e.dataset.rms,peak:e.dataset.peakBand,rect:e.getBoundingClientRect().toJSON()}))})")}
+        for frame in page.frames:
+            try:diagnostics['frames'].append({'url':frame.url,'media':frame.evaluate("Array.from(document.querySelectorAll('audio')).map(a=>({paused:a.paused,time:a.currentTime,duration:a.duration,ready:a.readyState,muted:a.muted,error:a.error?.message}))")})
+            except Exception:pass
+        (OUT/'diagnostics.json').write_text(json.dumps(diagnostics,ensure_ascii=False,indent=2))
+        print('CAPTURE_DIAGNOSTICS',json.dumps(diagnostics,ensure_ascii=False),flush=True)
         page.screenshot(path=str(OUT/'failure.png'))
         (OUT/'failure.json').write_text(json.dumps({'checks':checks,'errors':errors,'url':page.url,'text':page.locator('body').inner_text()},ensure_ascii=False,indent=2))
         raise

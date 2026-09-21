@@ -6,6 +6,7 @@ import {useMotionPreference} from '../lib/useMotionPreference';
 import {Icon} from './Icon';
 import {applyAmbient} from '../lib/ambient.mjs';
 import LiveSpectrum from './LiveSpectrum';
+import InteractiveCover from './InteractiveCover';
 
 type Palette=ReturnType<typeof paletteFromRgb>;
 /** Official playback is intentionally separate from the local-file audio analyser. */
@@ -24,7 +25,6 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
   const visible=useRef(false);
   const currentPalette=useRef(palette);
   const currentId=useRef(albums[0].id);
-  const gesture=useRef<{x:number;y:number}|null>(null);
   const active=albums[index];
   const stop=()=>{setPlayer(false);setPlayerLoaded(false);};
 
@@ -88,20 +88,17 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
   return <section ref={root} className={`album-room ${compact?'album-room-compact':''}`} data-selected-album={active.id} data-palette-state={paletteStatus} style={{'--room-accent':palette.accent,'--room-dark':palette.dark,'--room-glow':palette.glow} as CSSProperties} aria-label="专辑与官方试听">
     <div className="album-room-top"><span>SELECTED RECORDS / G.E.M.</span><span>三首歌，三个片刻。</span></div>
     <div className="album-stage">
-      <div className="album-art-stage" aria-label="当前专辑封面" onTouchStart={e=>{gesture.current={x:e.touches[0].clientX,y:e.touches[0].clientY};}} onTouchEnd={e=>{
-        const start=gesture.current;gesture.current=null;if(!start)return;
-        const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;
-        if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.5)choose(index+(dx<0?1:-1));
-      }}>
+      <div className="album-art-stage" aria-label="当前专辑封面">
         <div className="cover-halo" aria-hidden="true"/>
-        <div className="album-art-stack">
+        <InteractiveCover recordId={active.id} title={active.title} onStep={step=>choose(index+step)}>
           {/* Fixed layers make interrupted transitions reversible without exit-node accumulation. */}
           {albums.map(album=><motion.div key={album.id} className="album-art-plane" data-cover-id={album.id} aria-hidden={active.id!==album.id}
             initial={false} animate={{opacity:active.id===album.id?1:0,x:reduced||active.id===album.id?0:-18,rotate:reduced||active.id===album.id?0:-2}}
             style={{zIndex:active.id===album.id?2:1,pointerEvents:active.id===album.id?'auto':'none'}} transition={transition}>
-            {artErrors[album.id]?<div className="cover-unavailable"><span>G.E.M.</span><strong>{album.title}</strong><small>封面暂不可用</small></div>:<img src={album.artwork} alt={`${album.album} · 专辑封面`} width="600" height="600" decoding="async" referrerPolicy="no-referrer" loading={active.id===album.id?'eager':'lazy'} onError={()=>setArtErrors(old=>({...old,[album.id]:true}))}/>}
+            {artErrors[album.id]?<div className="cover-unavailable"><span>G.E.M.</span><strong>{album.title}</strong><small>封面暂不可用</small></div>:<img src={album.artwork} alt={`${album.album} · 专辑封面`} width="600" height="600" decoding="async" draggable={false} referrerPolicy="no-referrer" loading={active.id===album.id?'eager':'lazy'} onError={()=>setArtErrors(old=>({...old,[album.id]:true}))}/>}
           </motion.div>)}
-        </div>
+        </InteractiveCover>
+        <p className="cover-interaction-note">移动或轻触封面 · 左右滑动选曲</p>
         <div className="album-art-footer"><span>{active.format}</span><div><button type="button" className="icon-button" aria-label="上一张专辑" onClick={()=>choose(index-1)}><Icon name="arrow" style={{transform:'rotate(180deg)'}}/></button><span aria-hidden="true">0{index+1} / 03</span><button type="button" className="icon-button" aria-label="下一张专辑" onClick={()=>choose(index+1)}><Icon name="arrow"/></button></div></div>
       </div>
       <div className="album-copy">
