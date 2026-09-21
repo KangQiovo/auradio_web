@@ -1,0 +1,16 @@
+---
+import Site from '../layouts/Site.astro';
+import Arrow from '../components/Arrow.astro';
+import {release,platforms,changes} from '../lib/content.mjs';
+import {route,repo} from '../lib/urls';
+---
+<Site title="当前进度与版本记录 — Auradio" active="progress" light description="Auradio Android Demo 10 Fix2，发布于 2026-08-25。查看真实预发布进度、修复记录、Android 支持范围与未发布平台的状态。">
+  <div class="wrap">
+    <header class="page-heading"><a class="breadcrumb" href={route()}>Auradio / 当前进度</a><h1>正在打磨，<br/>还没有完成。</h1><p>版本状态、已经修改的内容，还有仍然存在的限制。<br/>信息核对日期：<time datetime={release.audited}>{release.audited}</time>。这不是实时构建状态。</p></header>
+    <section class="current-release" aria-label="当前版本"><div class="current-release-title"><span class="overline">ANDROID · PRE-RELEASE</span><h2>Demo 10<br/><em>Fix 2</em></h2><time datetime={release.date}>2026 / 08 / 25</time></div><div class="current-release-details"><span class="release-state">预发布</span><h3>0.1.0-demo10-fix2</h3><p>本轮集中修复官方网页会话返回、检查更新页大型卡片布局和播放器设置触控滚动。</p><dl><div><dt>最低系统</dt><dd>Android {release.minAndroid}</dd></div><div><dt>版本代码</dt><dd>{release.versionCode}</dd></div><div><dt>客户端主题</dt><dd>MIUIX / Liquid / Material 3</dd></div><div><dt>客户端语言</dt><dd>{release.languages} 种</dd></div><div><dt>CPU 架构</dt><dd>{release.abi.join(' / ')}</dd></div></dl><div class="download-state"><strong>公开下载尚未开放</strong><p>应用仓库及安装包仍处于受限分发状态。官网不提供私有资源的下载替代入口。</p></div></div></section>
+    <section class="progress-section"><div class="split-heading"><span class="section-number">版本记录</span><h2>改动，按时间留下。</h2></div><div class="changelog">{changes.map((c,i)=><article><time datetime={c.date}>{c.date}</time><div><span class="overline">ANDROID PRE-RELEASE</span><h3>{c.name}</h3><p>{c.summary}</p><details open={i===0}><summary>查看本次改动 <span class="disclosure" aria-hidden="true"></span></summary><ul>{c.items.map(item=><li>{item}</li>)}</ul></details><code>{c.version}</code></div></article>)}</div></section>
+    <section class="progress-section"><div class="split-heading"><span class="section-number">平台状态</span><h2>开发路线，<br/>不当成已上线。</h2></div><div class="platform-table">{platforms.map(p=><div class="platform-row"><h3>{p.name}</h3><span class:list={['platform-status',{'available':p.available}]}>{p.status}</span><p>{p.note}</p></div>)}</div></section>
+    <section class="release-boundaries progress-section"><h2>这版仍有这些边界。</h2><div><article><span>01</span><h3>网页会话不是曲库授权。</h3><p>“官方网页会话已确认”只表示用户完成网页操作并主动返回。不代表获取到平台 Token、歌单、播放地址、歌词、会员权益或下载能力。</p></article><article><span>02</span><h3>模拟器结果不代替实机。</h3><p>发布说明记录了 API 26 与 API 36 的验证，但不能代替真实蜂窝网络、厂商系统、鸿蒙兼容环境与平台真实账号的最终验收。</p></article><article><span>03</span><h3>预发布不是稳定性承诺。</h3><p>当前仍处于 Demo 修复阶段。是否适合日常使用，应以实际设备上的结果和后续版本说明为准。</p></article></div></section>
+    <div class="wide-link"><span>发现官网描述与版本情况不一致？</span><a class="text-link dark-link" href={`${repo}/issues`} target="_blank" rel="noopener noreferrer">反馈信息问题 <Arrow diagonal/></a></div>
+  </div>
+</Site>
