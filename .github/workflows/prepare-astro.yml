@@ -1,0 +1,31 @@
+name: Prepare Astro website toolchain
+on:
+  push:
+    branches: ['site/interactive-astro']
+    paths: ['.github/workflows/prepare-astro.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve and lock compatible packages
+        run: |
+          mkdir toolchain && cd toolchain
+          printf '%s\n' '{"name":"auradio-web","version":"1.0.0","private":true,"type":"module","engines":{"node":">=22.12.0"},"scripts":{"dev":"astro dev --host 0.0.0.0","build":"astro build","check":"astro check","preview":"astro preview --host 0.0.0.0","test":"node --test tests/*.test.mjs"}}' > package.json
+          npm install --save-exact --ignore-scripts --no-fund 'astro@^6' '@astrojs/react@^5' 'react@^19' 'react-dom@^19' 'motion@^12' 'gsap@^3' 'three@^0.180'
+          npm install --save-dev --save-exact --ignore-scripts --no-fund '@astrojs/check' 'typescript@^5' '@types/react@^19' '@types/react-dom@^19' '@types/three@^0.180'
+          cat package.json
+          npm audit --omit=dev --audit-level=high
+          cd ..
+          tar -czf astro-toolchain.tar.gz toolchain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astro-toolchain
+          path: astro-toolchain.tar.gz
+          retention-days: 7
