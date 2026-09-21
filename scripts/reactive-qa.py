@@ -45,9 +45,10 @@ class Quiet(SimpleHTTPRequestHandler):
 server=ThreadingHTTPServer(('127.0.0.1',4176),partial(Quiet,directory=str(ROOT/'dist')))
 Thread(target=server.serve_forever,daemon=True).start();base='http://127.0.0.1:4176/'
 with sync_playwright() as p:
-    # Auto-selection is a CI-only browser switch. Production always shows the native picker.
+    # Chromium uses a separate consent picker for preferCurrentTab. This CI-only switch
+    # accepts that test-tab picker; production always requires the visitor's permission.
     browser=p.chromium.launch(executable_path=shutil.which('google-chrome') or shutil.which('chromium'),headless=not args.headed,
-        args=['--no-sandbox','--enable-unsafe-swiftshader','--use-angle=swiftshader','--autoplay-policy=no-user-gesture-required','--auto-select-tab-capture-source-by-title=专辑与声音体验'])
+        args=['--no-sandbox','--enable-unsafe-swiftshader','--use-angle=swiftshader','--autoplay-policy=no-user-gesture-required','--auto-accept-this-tab-capture'])
     context=browser.new_context(viewport={'width':1440,'height':1100});fixtures(context)
     page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.set_default_timeout(15000)
     try:
