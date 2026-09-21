@@ -63,7 +63,10 @@ def hydrate(page,selector):
     page.wait_for_function('(s)=>!document.querySelector(s).closest("astro-island").hasAttribute("ssr")',arg=selector)
 
 def overflow(page,label):
-    assert page.evaluate('document.documentElement.scrollWidth')<=page.viewport_size['width']+1,label
+    actual=page.evaluate('document.documentElement.scrollWidth')
+    if actual>page.viewport_size['width']+1:
+        offenders=page.locator('body *').evaluate_all('(els)=>els.map(e=>({tag:e.tagName,cls:e.getAttribute("class"),right:e.getBoundingClientRect().right,left:e.getBoundingClientRect().left})).filter(e=>e.right>innerWidth+1||e.left< -1).slice(0,25)')
+        raise AssertionError(f'{label}: document={actual}, viewport={page.viewport_size["width"]}, outside={offenders}')
     record(label+' / no overflow')
 
 if args.root:
@@ -206,8 +209,14 @@ try:
                     expect(page.locator('.album-copy h2')).to_have_text('于是')
                     page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(700)
                     page.screenshot(path=str(OUT/'album-mobile.png'),animations='disabled',full_page=True)
-                    art=page.locator('.album-art-stage');art.dispatch_event('touchstart',{'touches':[{'clientX':250,'clientY':100}]})
-                    art.dispatch_event('touchend',{'changedTouches':[{'clientX':100,'clientY':102}]})
+                    art=page.locator('.album-art-stage')
+                    art.evaluate("""el=>{
+                        const start=new Touch({identifier:1,target:el,clientX:250,clientY:100});
+                        const end=new Touch({identifier:1,target:el,clientX:100,clientY:102});
+                        el.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[start],changedTouches:[start]}));
+                        el.dispatchEvent(new TouchEvent('touchend',{bubbles:true,touches:[],changedTouches:[end]}));
+                    }""")
+                    assert art.evaluate('(el)=>getComputedStyle(el).touchAction')=='pan-y'
                     expect(page.locator('.album-room')).to_have_attribute('data-selected-album','gem')
                     record('horizontal cover gesture advances without blocking vertical scroll')
             reduced=browser.new_context(viewport={'width':390,'height':844},reduced_motion='reduce');fixtures(reduced)
