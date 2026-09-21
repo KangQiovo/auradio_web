@@ -16,3 +16,7 @@
 .library-item b,.library-item>div:nth-child(2)>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;display:block}
 .mini-cover{position:relative;overflow:hidden;flex-shrink:0}
 .mini-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* Let long catalog titles shrink inside the existing grid instead of widening the page. */
+.product-story>*,.theme-explorer,.phone-preview,.library-search,.library-search input{min-width:0}
+.phone-preview{max-width:100%}
