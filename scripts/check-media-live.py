@@ -1,7 +1,7 @@
 """Observe real public cover/player availability without downloading music or bypassing controls.
 
 Third-party availability is reported separately, not replaced by fixtures and not required for
-building the website. A unavailable third party must still leave a usable official source link.
+building the website. An unavailable third party must still leave a usable official source link.
 """
 from pathlib import Path
 from functools import partial
@@ -39,13 +39,19 @@ try:
                 handle=iframe.element_handle();frame=handle.content_frame() if handle else None
                 record['official_player_frame']=bool(frame and frame.url.startswith('https://'))
                 if frame:
-                    # Use the provider's visible native controls. Never manipulate its source URL or media rights.
                     button=frame.get_by_role('button',name=re.compile('play|播放|재생',re.I)).first
-                    if button.count():
-                        try:
-                            button.click(timeout=5000);page.wait_for_timeout(3000)
-                            record['observed_media_playback']=frame.locator('audio,video').evaluate_all('(els)=>els.some(a=>!a.paused&&a.currentTime>0)')
-                        except Exception:pass
+                    try:
+                        if button.count():
+                            button.click(timeout=5000)
+                        elif name=='自由的你':
+                            # This official legacy player draws its visible play icon on the cover,
+                            # without a button role. Click the observed UI, not an audio API.
+                            frame.locator('body').click(position={'x':42,'y':38},timeout=5000)
+                        page.wait_for_timeout(3500)
+                        record['observed_media_playback']=frame.locator('audio,video').evaluate_all('(els)=>els.some(a=>!a.paused&&a.currentTime>0)')
+                        record['player_visible_text']=frame.locator('body').inner_text()[:400]
+                    except Exception as error:
+                        record['play_observation_error']=str(error).splitlines()[0][:180]
                 page.screenshot(path=str(OUT/f'player-{i+1}.png'))
                 if i==1:
                     page.get_by_role('button',name='关闭官方试听').click()

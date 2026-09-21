@@ -27,7 +27,18 @@ export function paletteFromPixels(pixels) {
     item.count++;item.r+=r;item.g+=g;item.b+=b;item.score+=weight;
     buckets.set(key,item);
   }
-  const best=[...buckets.values()].sort((a,b)=>b.score-a.score)[0];
+  const candidates=[...buckets.values()];
+  // Cream paper borders form a single large bucket; painted areas span many shades.
+  // Prefer a meaningful chromatic region, but retain neutrals for monochrome covers.
+  const chromatic=candidates.filter(item=>{
+    const channels=[item.r,item.g,item.b].map(value=>value/item.count);
+    const high=Math.max(...channels),low=Math.min(...channels);
+    return high>55 && high-low>36 && (high-low)/high>0.18;
+  });
+  const coloredCount=chromatic.reduce((sum,item)=>sum+item.count,0);
+  const totalCount=candidates.reduce((sum,item)=>sum+item.count,0);
+  const pool=coloredCount>=Math.max(3,totalCount*0.03)?chromatic:candidates;
+  const best=pool.sort((a,b)=>b.score-a.score)[0];
   return paletteFromRgb(best?[best.r/best.count,best.g/best.count,best.b/best.count]:[116,143,151]);
 }
 // Limit work to one 40×40 sample per artwork, including across multiple React islands.
