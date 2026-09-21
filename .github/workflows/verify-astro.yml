@@ -30,19 +30,6 @@ jobs:
           assert hashlib.sha256(data).hexdigest() == '9179a3e21f3b781e9a179086d1d87fff1bc613637b3c5fe7ddab11593409a4e2'
           path=pathlib.Path('src/styles/global.css');path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
           PY
-      - name: Restore exact lock from the already verified toolchain
-        if: hashFiles('package-lock.json') == ''
-        uses: actions/download-artifact@v4
-        with:
-          name: astro-toolchain
-          run-id: 35579787919
-          github-token: ${{ github.token }}
-          path: /tmp/auradio-toolchain
-      - name: Place initial lockfile
-        if: hashFiles('package-lock.json') == ''
-        run: |
-          tar -xzf /tmp/auradio-toolchain/astro-toolchain.tar.gz -C /tmp/auradio-toolchain toolchain/package-lock.json
-          cp /tmp/auradio-toolchain/toolchain/package-lock.json package-lock.json
       - run: npm ci --ignore-scripts --no-fund
       - run: npm test && npm run check && npm run build
       - run: npm audit --omit=dev --audit-level=high
@@ -50,6 +37,9 @@ jobs:
         run: |
           python -m pip install playwright==1.57.0
           if ! command -v google-chrome && ! command -v chromium; then python -m playwright install --with-deps chromium; fi
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+          fc-cache -f
       - name: Real desktop and mobile interaction checks
         run: python scripts/browser-qa.py --output qa-output
       - name: Save build and browser evidence
