@@ -1,0 +1,43 @@
+name: Audit starred motion libraries
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/audit-motion.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read public stars without credentials
+        shell: python
+        run: |
+          import json, re, urllib.request
+          matches = []
+          total = 0
+          for page in range(1, 31):
+              url = f'https://api.github.com/users/KangQiovo/starred?per_page=100&page={page}'
+              request = urllib.request.Request(url, headers={'Accept':'application/vnd.github+json','User-Agent':'Auradio-website-source-audit'})
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  repos = json.load(response)
+              total += len(repos)
+              for repo in repos:
+                  text = repo['full_name'] + ' ' + (repo.get('description') or '') + ' ' + ' '.join(repo.get('topics', []))
+                  if re.search(r'animat|motion|gsap|lenis|three\.js|threejs|react-bits|reactbits|scroll|webgl|shader|动效|动画|粒子|视觉', text, re.I):
+                      item = {'repository':repo['full_name'],'description':repo.get('description'),'license':(repo.get('license') or {}).get('spdx_id'),'url':repo['html_url'],'branch':repo['default_branch']}
+                      matches.append(item)
+                      print(json.dumps(item, ensure_ascii=False))
+              if len(repos) < 100:
+                  break
+          else:
+              raise RuntimeError('Star pagination limit reached; review before claiming completeness')
+          print(f'AUDIT_COMPLETE: {total} public starred repositories checked; {len(matches)} motion candidates.')
+          with open('motion-sources.json','w') as out:
+              json.dump({'owner':'KangQiovo','complete':True,'checked':total,'candidates':matches},out,ensure_ascii=False,indent=2)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: starred-motion-audit
+          path: motion-sources.json
+          retention-days: 7
