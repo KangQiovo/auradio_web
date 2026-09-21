@@ -3,4 +3,4 @@ import Site from '../layouts/Site.astro';
 import Arrow from '../components/Arrow.astro';
 import {route} from '../lib/urls';
 ---
-<Site title="没有找到这一页 — Auradio"><section class="not-found wrap"><span class="section-number">404 / 暂时走错了</span><h1>这一页，<br/>没有声音。</h1><p>地址可能发生了变化。你可以回到概览，<br/>或直接打开声音体验室。</p><div class="hero-actions"><a class="button button-mint" href={route()}>回到概览 <Arrow/></a><a class="text-link" href={route('experience/')}>进入体验室 <Arrow/></a></div></section></Site>
+<Site title="没有找到这一页 — Auradio"><section class="not-found wrap"><span class="section-number">404 / 暂时走错了</span><h1>这一页，<br/>没有声音。</h1><p>地址可能发生了变化。你可以回到概览，<br/>或直接打开声音体验。</p><div class="hero-actions"><a class="button button-mint" href={route()}>回到概览 <Arrow/></a><a class="text-link" href={route('experience/')}>进入体验 <Arrow/></a></div></section></Site>

@@ -1,16 +1,9 @@
-/* Album surfaces share one ambience; continuous full-screen blur/repaint loops are avoided. */
-:root{--album-dark:#101d24;--album-soft:#172a32;--album-accent:#b4ddca;--album-paper:#eceee5}
-body{isolation:isolate}
-.page-ambience{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:var(--dark)}
-.page-ambience>div{position:absolute;inset:0;opacity:0;transition:opacity 1.1s cubic-bezier(.22,1,.36,1);will-change:opacity}
-html[data-album] body:not(.page-light){background:transparent}
-html[data-album] .site-header{background:color-mix(in srgb,var(--album-dark) 94%,transparent);transition:background-color .8s ease}
-html[data-album] .site-footer{background:var(--album-dark);transition:background-color .8s ease}
-html[data-album] .button-mint{background:var(--album-accent);transition:background-color .7s ease,transform .25s ease}
-html[data-album] .light-section{background:var(--album-paper);transition:background-color .9s ease}
-html[data-album] .reading-progress{background:var(--album-accent)}
-html[data-album] .listening-invite{background:transparent}
-.page-light .page-ambience{display:none}
+/* Each listening area owns its palette and two composited background layers. */
+.album-scope{position:relative;isolation:isolate;--album-dark:#101d24;--album-soft:#172a32;--album-accent:#b4ddca;--album-paper:#eceee5;--mint:var(--album-accent)}
+.album-ambience{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:var(--dark)}
+.album-ambience>div{position:absolute;inset:0;opacity:0;transition:opacity 1.1s cubic-bezier(.22,1,.36,1);will-change:opacity}
+.album-scope[data-album] .button-mint{background:var(--album-accent);transition:background-color .7s ease,transform .25s ease}
+.album-scope em{transition:color .8s ease}
 .record-section-heading{display:grid;grid-template-columns:1fr 1.35fr;gap:22px 48px;align-items:end;margin-bottom:64px}
 .record-section-heading>.section-number{grid-column:1/-1}
 .record-section-heading h2{font-size:clamp(38px,4.2vw,66px);line-height:1.25;font-weight:500;letter-spacing:-.045em}
@@ -103,6 +96,6 @@ html[data-album] .listening-invite{background:transparent}
   .anticipation-cover>div{flex-wrap:wrap;gap:10px}.album-art-footer{flex-wrap:wrap}
 }
 @media(max-width:360px){.album-room-top{gap:8px}.album-room-top>span:last-child{font-size:9px}.album-page-heading h1{font-size:36px}.album-copy h2,.album-room-compact .album-copy h2{font-size:40px}.preview-provider{font-size:9px}.album-art-stack,.album-art-footer{width:calc(100% - 14px)}}
-@media(prefers-reduced-motion:reduce){.page-ambience>div,.album-room *,.site-header,.site-footer,.light-section{transition:none!important;scroll-behavior:auto!important}.album-art-plane{transform:none!important}.page-ambience>div{will-change:auto}.album-listen-button:hover{transform:none}}
-html[data-motion=reduce] .page-ambience>div,html[data-motion=reduce] .album-room *,html[data-motion=reduce] .site-header,html[data-motion=reduce] .light-section{transition:none!important;scroll-behavior:auto!important}
+@media(prefers-reduced-motion:reduce){.album-ambience>div,.album-room *,.album-scope em{transition:none!important;scroll-behavior:auto!important}.album-art-plane{transform:none!important}.album-ambience>div{will-change:auto}.album-listen-button:hover{transform:none}}
+html[data-motion=reduce] .album-ambience>div,html[data-motion=reduce] .album-room *,html[data-motion=reduce] .album-scope em{transition:none!important;scroll-behavior:auto!important}
 html[data-motion=reduce] .album-art-plane{transform:none!important}

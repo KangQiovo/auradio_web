@@ -4,24 +4,9 @@ import {albums} from '../lib/albums.mjs';
 import {extractCoverPalette, paletteFromRgb} from '../lib/palette.mjs';
 import {useMotionPreference} from '../lib/useMotionPreference';
 import {Icon} from './Icon';
+import {applyAmbient} from '../lib/ambient.mjs';
 
 type Palette=ReturnType<typeof paletteFromRgb>;
-function applyAmbient(p:Palette,id:string){
-  const html=document.documentElement;
-  html.dataset.album=id;
-  html.style.setProperty('--album-accent',p.accent);
-  html.style.setProperty('--album-dark',p.dark);
-  html.style.setProperty('--album-soft',p.soft);
-  html.style.setProperty('--album-paper',p.paper);
-  const layers=document.querySelectorAll<HTMLElement>('.page-ambience > div');
-  const next=html.dataset.ambientLayer==='1'?0:1;
-  layers.forEach((layer,i)=>{
-    if(i===next) layer.style.background=`radial-gradient(ellipse at 80% 12%, ${p.glow} 0%, ${p.dark} 68%)`;
-    layer.style.opacity=i===next?'1':'0';
-  });
-  html.dataset.ambientLayer=String(next);
-}
-
 /** Official playback is intentionally separate from the local-file audio analyser. */
 export default function AlbumRoom({compact=false}:{compact?:boolean}){
   const [index,setIndex]=useState(0);
@@ -64,7 +49,7 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
     if(!root.current)return;
     const observer=new IntersectionObserver(([entry])=>{
       visible.current=entry.isIntersecting;
-      if(entry.isIntersecting)applyAmbient(currentPalette.current,currentId.current);
+      if(entry.isIntersecting)applyAmbient(root.current?.closest<HTMLElement>('[data-album-scope]') ?? null,currentPalette.current,currentId.current);
     },{threshold:0.12});
     observer.observe(root.current);
     return()=>observer.disconnect();
@@ -76,12 +61,12 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
     const fallback=paletteFromRgb(active.color);
     currentPalette.current=fallback;
     setPalette(fallback);
-    if(visible.current)applyAmbient(fallback,active.id);
+    if(visible.current)applyAmbient(root.current?.closest<HTMLElement>('[data-album-scope]') ?? null,fallback,active.id);
     void extractCoverPalette(active.artwork,active.color).then((result:unknown)=>{
       if(request!==selection.current)return;
       const {palette:p,extracted}=result as {palette:Palette;extracted:boolean};
       currentPalette.current=p;setPalette(p);setPaletteStatus(extracted?'extracted':'fallback');
-      if(visible.current)applyAmbient(p,active.id);
+      if(visible.current)applyAmbient(root.current?.closest<HTMLElement>('[data-album-scope]') ?? null,p,active.id);
     });
     return()=>{selection.current++;};
   },[active.id]);

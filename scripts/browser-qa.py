@@ -58,6 +58,45 @@ def visit(page,path):
     page.wait_for_function('Array.from(document.querySelectorAll(\'astro-island[client="load"]\')).every(e=>!e.hasAttribute("ssr"))')
     return response
 
+def outside_colours(page):
+    return page.evaluate("""()=>{
+      const selectors=['html','body','.site-header','.site-footer','.reading-progress',
+        '.hero','.hero .button-mint','.hero h1 em','.facts-rail','.light-section',
+        '.release-teaser','.faq-section','.wordmark-end'];
+      return Object.fromEntries(selectors.map(selector=>[selector,
+        Array.from(document.querySelectorAll(selector)).map(el=>{
+          const s=getComputedStyle(el);return [s.backgroundColor,s.color,s.getPropertyValue('--mint')];
+        })]));
+    }""")
+
+def check_scoped_colours(page,label):
+    original=outside_colours(page)
+    hydrate(page,'.album-room')
+    scope=page.locator('[data-album-scope]')
+    expect(scope).to_have_count(1)
+    descriptions=[('自由的你','做你想做的，你是自由的！'),
+                  ('于是','成长要学会独处，虽然有一点孤独。'),
+                  ('G.E.M.','Get everybody moving.')]
+    accents=[]
+    for title,text in descriptions:
+        page.get_by_role('tab',name='选择 '+title,exact=True).click()
+        expect(page.locator('.album-copy h2')).to_have_text(title)
+        expect(page.locator('.album-description')).to_have_text(text)
+        page.wait_for_timeout(1200)
+        accents.append(scope.evaluate('(el)=>el.style.getPropertyValue("--album-accent")'))
+        assert outside_colours(page)==original, label+' changed global branding'
+        assert page.evaluate('!document.documentElement.dataset.album&&!document.body.dataset.album')
+        assert page.evaluate('!document.documentElement.style.getPropertyValue("--album-accent")&&!document.body.style.getPropertyValue("--album-accent")')
+        expect(scope.locator(':scope > .album-ambience > div')).to_have_count(2)
+        box=scope.bounding_box();background=scope.locator(':scope > .album-ambience').bounding_box()
+        assert box and background
+        assert abs(box['y']-background['y'])<1 and abs(box['height']-background['height'])<1
+        assert scope.locator(':scope > .album-ambience').evaluate('(e)=>getComputedStyle(e).position')=='absolute'
+    if not args.live_artwork:assert len(set(accents))==3
+    record(label+': exact copy and local palettes; header/footer/global colours unchanged through all tracks')
+    scope.scroll_into_view_if_needed()
+    page.screenshot(path=str(OUT/(label+'-scope.png')),animations='disabled')
+
 def hydrate(page,selector):
     page.locator(selector).scroll_into_view_if_needed()
     page.wait_for_function('(s)=>!document.querySelector(s).closest("astro-island").hasAttribute("ssr")',arg=selector)
@@ -91,6 +130,8 @@ try:
             for path in ['', 'experience/','progress/','privacy/','credits/','404.html']:
                 visit(page,path)
                 assert page.locator('h1').count()==1
+                assert '体验'+'室' not in page.content()
+                expect(page.locator('.desktop-nav a').filter(has_text='体验')).to_have_text('体验')
                 assert len(page.locator('main').inner_text())>50
                 assert page.locator('vite-error-overlay').count()==0
                 assert not re.search(r'Demo\s*\d|\d+\.\d+\.\d+-demo|更新日志|版本记录',page.content(),re.I)
@@ -116,7 +157,10 @@ try:
             page.get_by_text('接下来，还会有什么？',exact=True).click()
             expect(page.locator('details').filter(has_text='接下来，还会有什么？')).to_have_attribute('open','')
             record('platform boundaries and restrained future FAQ retained')
+            check_scoped_colours(page,'home')
             visit(page,'experience/')
+            check_scoped_colours(page,'experience')
+            page.get_by_role('tab',name='选择 自由的你',exact=True).click()
             album=page.locator('.album-room')
             assert page.locator('.official-preview iframe').count()==0
             expect(album).to_have_attribute('data-selected-album','freedom')
@@ -126,8 +170,8 @@ try:
             page.get_by_role('tab',name='选择 于是',exact=True).click()
             expect(album).to_have_attribute('data-selected-album','therefore')
             expect(page.locator('.album-copy h2')).to_have_text('于是')
-            page.wait_for_function('document.documentElement.dataset.album==="therefore"')
-            first=page.locator('html').evaluate('(el)=>el.style.getPropertyValue("--album-accent")')
+            page.wait_for_function('document.querySelector("[data-album-scope]").dataset.album==="therefore"')
+            first=page.locator('[data-album-scope]').evaluate('(el)=>el.style.getPropertyValue("--album-accent")')
             page.get_by_role('button',name='打开官方试听').click()
             expect(page.locator('.official-preview iframe')).to_have_count(1)
             assert '1053568849' in page.locator('.official-preview iframe').get_attribute('src')
@@ -135,11 +179,11 @@ try:
             page.get_by_role('tab',name='选择 G.E.M.',exact=True).click()
             expect(page.locator('.official-preview iframe')).to_have_count(0)
             expect(page.locator('.album-copy h2')).to_have_text('G.E.M.')
-            page.wait_for_function('document.documentElement.dataset.album==="gem"')
+            page.wait_for_function('document.querySelector("[data-album-scope]").dataset.album==="gem"')
             if not args.live_artwork:expect(album).to_have_attribute('data-palette-state','extracted')
-            second=page.locator('html').evaluate('(el)=>el.style.getPropertyValue("--album-accent")')
+            second=page.locator('[data-album-scope]').evaluate('(el)=>el.style.getPropertyValue("--album-accent")')
             assert first!=second
-            record('switching unloads the old player, updates cover/title and changes extracted page palette')
+            record('switching unloads the old player, updates cover/title and changes extracted scoped palette')
             page.get_by_role('tab',name='选择 G.E.M.',exact=True).focus();page.keyboard.press('Home')
             expect(page.get_by_role('tab',name='选择 自由的你',exact=True)).to_be_focused()
             expect(album).to_have_attribute('data-selected-album','freedom')
@@ -158,7 +202,7 @@ try:
             expect(active_cover).to_have_css('opacity','1')
             for hidden in page.locator('.album-art-plane[aria-hidden="true"]').all():
                 expect(hidden).to_have_css('opacity','0')
-            assert page.locator('.page-ambience>div').count()==2
+            assert page.locator('.album-ambience>div').count()==2
             record('rapid selection settles correctly with bounded cover and background layers')
             page.locator('.album-room').scroll_into_view_if_needed()
             page.screenshot(path=str(OUT/'album-desktop.png'),animations='disabled')
@@ -205,6 +249,7 @@ try:
                 expect(page.get_by_role('button',name='打开导航',exact=True)).to_be_focused()
                 record(str(width)+'px mobile navigation')
                 if width==390:
+                    check_scoped_colours(page,'mobile-experience')
                     page.get_by_role('tab',name='选择 于是',exact=True).click()
                     expect(page.locator('.album-copy h2')).to_have_text('于是')
                     page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(700)
@@ -222,7 +267,7 @@ try:
             reduced=browser.new_context(viewport={'width':390,'height':844},reduced_motion='reduce');fixtures(reduced)
             rp=reduced.new_page();visit(rp,'experience/')
             rp.get_by_role('tab',name='选择 于是',exact=True).click()
-            assert rp.locator('.page-ambience>div').first.evaluate('(e)=>getComputedStyle(e).transitionDuration')=='0s'
+            assert rp.locator('.album-ambience>div').first.evaluate('(e)=>getComputedStyle(e).transitionDuration')=='0s'
             hydrate(rp,'.audio-studio');expect(rp.get_by_role('slider',name='响应强度')).to_be_disabled()
             record('system reduced motion suppresses large transitions and continuous field animation')
             reduced.close()

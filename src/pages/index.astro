@@ -13,7 +13,7 @@ import {route} from '../lib/urls';
     <div class="hero-copy">
       <h1>听见。<br/><em>也看见。</em></h1>
       <p class="hero-description">为你手里的音乐，留一个舒服的位置。<br/>Auradio 是一个仍在打磨中的<br class="desktop-only"/> Android 音乐播放器。</p>
-      <div class="hero-actions"><a class="button button-mint" href={route('experience/')}>打开体验室 <Arrow/></a><a class="text-link" href={route('progress/')}>看看当前进度 <Arrow diagonal/></a></div>
+      <div class="hero-actions"><a class="button button-mint" href={route('experience/')}>打开体验 <Arrow/></a><a class="text-link" href={route('progress/')}>看看当前进度 <Arrow diagonal/></a></div>
       <p class="hero-release">从聆听出发<span>Android · 正在打磨</span></p>
     </div>
     <HeroField client:load/>
@@ -34,10 +34,13 @@ import {route} from '../lib/urls';
       </div>
     </div>
   </section>
-  <section id="records" class="record-section section-pad wrap">
-    <div class="record-section-heading" data-reveal><span class="section-number">02 / 精选聆听</span><h2>一首歌，<br/>一种颜色。</h2><p>从邓紫棋的三首作品开始。<br/>切换封面，看色彩自然地融进页面。</p></div>
+  <section id="records" class="record-section section-pad album-scope" data-album-scope>
+    <div class="album-ambience" aria-hidden="true"><div></div><div></div></div>
+    <div class="wrap">
+    <div class="record-section-heading" data-reveal><span class="section-number">02 / 精选聆听</span><h2>一首歌，<br/>一种颜色。</h2><p>从邓紫棋的三首作品开始。<br/>切换封面，看色彩自然地融进这片聆听空间。</p></div>
     <AlbumRoom compact client:visible/>
     <div class="wide-link"><span>也想看看自己的音乐，是什么样子？</span><a class="text-link" href={route('experience/#local')}>进入本地声场 <Arrow/></a></div>
+    </div>
   </section>
   <section class="light-section section-pad">
     <div class="wrap"><div class="section-intro" data-reveal><span class="section-number">03 / 音乐平台入口</span><h2>本地是本地，<br/>平台是平台。</h2><p>客户端提供官方网页或应用入口。<br/>网页会话确认，不等于原生曲库连接。</p></div><ProviderExplorer client:visible/></div>

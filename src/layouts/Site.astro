@@ -4,8 +4,8 @@ import '../styles/albums.css';
 import { route, repo } from '../lib/urls';
 import Arrow from '../components/Arrow.astro';
 interface Props { title?: string; description?: string; active?: string; light?: boolean }
-const { title = 'Auradio — 听见，也看见', description = 'Auradio 是仍在打磨中的 Android 音乐播放器。了解本地曲库、三种界面主题、当前预发布进度，进入独立的网页声音体验室。', active = 'home', light = false } = Astro.props;
-const links = [{id:'home',label:'概览',href:route()},{id:'experience',label:'体验室',href:route('experience/')},{id:'progress',label:'关于进展',href:route('progress/')},{id:'privacy',label:'使用与隐私',href:route('privacy/')}];
+const { title = 'Auradio — 听见，也看见', description = 'Auradio 是仍在打磨中的 Android 音乐播放器。了解本地曲库、三种界面主题、当前预发布进度，进入独立的网页声音体验。', active = 'home', light = false } = Astro.props;
+const links = [{id:'home',label:'概览',href:route()},{id:'experience',label:'体验',href:route('experience/')},{id:'progress',label:'关于进展',href:route('progress/')},{id:'privacy',label:'使用与隐私',href:route('privacy/')}];
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 <!doctype html>
@@ -23,7 +23,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <script is:inline>try{if(localStorage.getItem('auradio.motion')==='reduce')document.documentElement.dataset.motion='reduce'}catch{}</script>
   </head>
   <body class:list={[{ 'page-light': light }]}>
-    <div class="page-ambience" aria-hidden="true"><div></div><div></div></div>
     <a class="skip-link" href="#main">跳至正文</a>
     <header class="site-header">
       <div class="nav-shell">

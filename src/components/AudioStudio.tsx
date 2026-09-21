@@ -100,13 +100,13 @@ export default function AudioStudio() {
     try{
       if(document.fullscreenElement)await document.exitFullscreen();
       else if(root.current?.requestFullscreen)await root.current.requestFullscreen();
-      else setNotice('当前浏览器不支持全屏模式，仍可直接使用页面中的体验室。');
+      else setNotice('当前浏览器不支持全屏模式，仍可直接使用页面中的体验。');
     }catch{setNotice('浏览器没有允许全屏显示。页面中的播放和设置仍然可以使用。');}
   }
   return <div className="audio-studio" ref={root}>
     <div className="studio">
       <div className="studio-view">
-        <div className="studio-view-top"><span><i className={`status-dot ${playing?'on':''}`}/>{playing?'正在播放': '等待播放'}</span><button className="icon-button" onClick={()=>void fullscreen()} aria-label="切换体验室全屏"><Icon name="expand"/></button></div>
+        <div className="studio-view-top"><span><i className={`status-dot ${playing?'on':''}`}/>{playing?'正在播放': '等待播放'}</span><button className="icon-button" onClick={()=>void fullscreen()} aria-label="切换体验全屏"><Icon name="expand"/></button></div>
         <SoundField mode={mode} intensity={intensity} animated={playing} level={level}/>
         <div className="studio-track"><div><span className="overline">LOCAL AUDIO / YOUR SOUND</span><h2>{track.title}</h2><p>{track.subtitle}</p></div><span className="studio-track-number" aria-hidden="true">L</span></div>
         <div className="transport">
