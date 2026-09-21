@@ -43,6 +43,15 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
   const stop=()=>{setPlayer(false);setPlayerLoaded(false);};
 
   useEffect(()=>{
+    // SSR images can fail before React attaches onError. Adopt that state after hydration.
+    const failed:Record<string,boolean>={};
+    root.current?.querySelectorAll<HTMLImageElement>('.album-art-plane img').forEach(image=>{
+      const id=image.closest<HTMLElement>('[data-cover-id]')?.dataset.coverId;
+      if(id&&image.complete&&image.naturalWidth===0)failed[id]=true;
+    });
+    if(Object.keys(failed).length)setArtErrors(previous=>({...previous,...failed}));
+  },[active.id]);
+  useEffect(()=>{
     const hash=new URLSearchParams(location.search).get('track');
     const found=albums.findIndex(a=>a.id===hash);
     if(found>=0)setIndex(found);
