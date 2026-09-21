@@ -1,0 +1,23 @@
+name: Export website source snapshot
+on:
+  push:
+    branches: ['site/interactive-astro']
+    paths: ['.github/workflows/export-website.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Archive website files only
+        run: git archive --format=tar.gz --output=/tmp/website-source.tar.gz HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-source-snapshot
+          path: /tmp/website-source.tar.gz
+          retention-days: 1
