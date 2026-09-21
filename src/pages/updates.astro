@@ -1,0 +1,9 @@
+---
+import Site from '../layouts/Site.astro';
+import content from '../data/public-content.json';
+import Icon from '../components/Icon';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Site title="开发近况 — Auradio" description="Auradio 当前开发预览与已完成的改进。只分享已经发生的变化，不公开详细未来路线或上线时间。">
+  <div class="document-page wrap"><div class="page-heading"><span class="mono">IN THE MAKING</span><h1>进展，不是愿景清单。</h1><p>记录一些已经发生的变化。<br />还没做好之前，不急着把它写成承诺。</p></div><div class="update-layout"><aside class="update-aside"><span class="live-dot" /><strong>Android 开发预览</strong><p>仍在持续调整与验证。<br />本站尚未提供公开下载。</p><span class="mono">内容核对 / 2026.09.21</span><a class="inline-link" href={`${base}/experience/`}>体验网页版<Icon name="arrow" size={17} /></a></aside><div><article class="update-article"><div class="release-top"><time datetime={content.release.date}>2026.08.25</time><span>开发预览 · 非正式版</span></div><h2>{content.release.version}</h2><p class="update-lead">{content.release.summary}</p>{content.release.changes.map(change => <section><h3>{change.title}</h3><p>{change.text}</p></section>)}<div class="editor-note"><strong>这一版没有改变的边界</strong><p>官方网页会话确认，不等于原生账号或在线音乐能力已经连接。各项能力以实际版本为准。</p></div></article><section class="what-next"><span class="mono">TO BE CONTINUED</span><h2>下一次，有了实质变化再见。</h2><p>继续打磨现有体验。更多消息，敬请期待。<br />暂不公布详细功能路线与上线日期。</p></section></div></div></div>
+</Site>

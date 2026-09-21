@@ -1,0 +1,6 @@
+---
+import Site from '../layouts/Site.astro';
+import Icon from '../components/Icon';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Site title="这一页暂时不在 — Auradio"><section class="not-found wrap"><span class="mono">404 / A QUIET PAUSE</span><h1>这里，暂时没有声音。</h1><p>这个页面不存在，或地址已经改变。</p><a class="button button-dark" href={`${base}/`}>回到首页<Icon name="arrow" /></a></section></Site>

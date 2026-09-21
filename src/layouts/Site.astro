@@ -1,0 +1,49 @@
+---
+import '../styles/global.css';
+import Icon from '../components/Icon';
+interface Props { title?: string; description?: string; dark?: boolean; }
+const { title = 'Auradio — 音乐，按你的样子。', description = 'Auradio，一款正在打磨中的音乐播放器。了解当前 Android 开发预览，探索界面风格，体验独立制作的网页听音室。', dark = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const href = (path = '') => `${base.replace(/\/$/, '')}/${path}`;
+const path = Astro.url.pathname;
+const nav = [{ label: '概览', path: '' }, { label: '体验', path: 'experience/' }, { label: '进展', path: 'updates/' }, { label: '关于', path: 'about/' }];
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="zh-CN" data-motion="reduced">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={dark ? '#101c18' : '#f2f2eb'} />
+    <meta name="color-scheme" content="light" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:url" content={canonical} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={href('auradio-mark.svg')} />
+    <title>{title}</title>
+    <script is:inline>
+      (() => { let saved; try { saved = localStorage.getItem('auradio-web-motion'); } catch {} const reduced = saved ? saved === 'reduced' : matchMedia('(prefers-reduced-motion: reduce)').matches; document.documentElement.dataset.motion = reduced ? 'reduced' : 'full'; })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class:list={['site-header', { 'on-dark': dark }]}>
+      <div class="header-inner">
+        <a class="brand" href={href()} aria-label="Auradio 首页"><img src={href('auradio-mark.svg')} width="52" height="52" alt="" /><span>auradio<span class="brand-period">.</span></span></a>
+        <nav class="desktop-nav" aria-label="主导航">{nav.map(item => <a href={href(item.path)} aria-current={path === href(item.path) ? 'page' : undefined}>{item.label}</a>)}</nav>
+        <div class="header-actions"><button class="motion-toggle" data-motion-toggle hidden aria-pressed="false"><span class="motion-symbol" aria-hidden="true"><i /><i /><i /></span><span data-motion-label>减少动态</span></button><a class="header-cta" href={href('updates/')}>当前版本<Icon name="arrow" size={16} /></a></div>
+        <details class="mobile-nav"><summary aria-label="展开导航">菜单<span aria-hidden="true">+</span></summary><nav aria-label="移动导航">{nav.map(item => <a href={href(item.path)} aria-current={path === href(item.path) ? 'page' : undefined}>{item.label}</a>)}</nav></details>
+      </div>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer">
+      <div class="footer-top wrap"><a class="brand" href={href()} aria-label="Auradio 首页"><img src={href('auradio-mark.svg')} width="52" height="52" alt="" /><span>auradio.</span></a><p>听音乐，照自己的节奏。</p><a class="footer-source" href="https://github.com/KangQiovo/auradio_web" target="_blank" rel="noopener noreferrer">官网源码<Icon name="arrow" size={17} /></a></div>
+      <div class="footer-bottom wrap"><span>© 2026 Auradio / KangQi</span><span>正在打磨中。敬请期待。</span><div><a href={href('privacy/')}>本站隐私</a><a href={href('about/#credits')}>制作与致谢</a><a href="#main">回到顶部</a></div></div>
+    </footer>
+    <script>import '../scripts/site';</script>
+  </body>
+</html>

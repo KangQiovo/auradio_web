@@ -1,0 +1,7 @@
+---
+import Site from '../layouts/Site.astro';
+import ListeningRoom from '../components/ListeningRoom';
+---
+<Site title="听音室 — Auradio" dark description="试试 Auradio 官网的独立网页听音室。播放原创片段，或在本机打开音频，感受可切换的视觉形态。不是应用实机画面。">
+  <section class="experience-page"><div class="wrap"><div class="experience-intro"><div><h1>留一会儿。<br /><span>听一首自己的歌。</span></h1><p>戴上耳机也好，安静看看也好。这里是一间不需要登录的网页听音室。</p></div><span class="mono">WEB STUDY / 01</span></div><ListeningRoom client:load expanded /><div class="experience-notes"><div><span class="mono">01</span><h2>先点击，才有声音。</h2><p>播放键会开始一段原创合成片段。它不是平台曲库，也不会自动播放。</p></div><div><span class="mono">02</span><h2>换成你自己的音乐。</h2><p>本地音频由浏览器在本机读取。支持 30 MB、30 分钟以内的音频，实际格式取决于浏览器解码能力。</p></div><div><span class="mono">03</span><h2>喜欢安静，就少一点动态。</h2><p>页面右上方可以减少动态。这个演示独立于应用，不代表已发布的客户端效果。</p></div></div></div></section>
+</Site>

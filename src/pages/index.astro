@@ -1,0 +1,36 @@
+---
+import Site from '../layouts/Site.astro';
+import ListeningRoom from '../components/ListeningRoom';
+import ThemeStudio from '../components/ThemeStudio';
+import Icon from '../components/Icon';
+import content from '../data/public-content.json';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Site dark>
+  <section class="hero">
+    <div class="hero-grid wrap">
+      <div class="hero-copy"><h1>音乐，<br />按你的<span class="soft-serif">样子。</span></h1><p>一款正在打磨中的音乐播放器。<br />从本地曲库开始，让播放、界面与日常操作，<br class="desktop-break" />更合你的习惯。</p><div class="hero-links"><a class="button button-light" href={`${base}/experience/`}>进入听音室<Icon name="arrow" /></a><a class="quiet-link" href="#everyday">认识 Auradio</a></div><div class="hero-footnote"><span class="live-dot" />Android 开发预览<span class="note-divider" />尚未开放公共下载</div></div>
+      <ListeningRoom client:load />
+    </div>
+    <div class="hero-bottom wrap"><span class="mono">A PERSONAL WAY TO LISTEN.</span><a href="#everyday">向下，慢慢了解<svg viewBox="0 0 16 20" width="14" height="18" fill="none" stroke="currentColor" aria-hidden="true"><path d="M8 1v16m-5-5 5 5 5-5" /></svg></a><span class="mono">01 — 06</span></div>
+  </section>
+  <section id="everyday" class="everyday-section wrap section-pad">
+    <div class="section-meta"><span class="mono">01 / EVERYDAY LISTENING</span><span>先从每天会用的地方开始</span></div>
+    <div class="split-heading" data-reveal><h2>熟悉的音乐。<br />自己的秩序。</h2><p>不用每次都从头寻找。以歌曲、专辑和艺术家整理本地曲库，把注意力留给正在听的那一首。</p></div>
+    <div class="library-editorial" data-reveal><div class="library-word">Your music.<br /><span>Your pace.</span></div><div class="library-index"><div><span class="mono">01</span><h3>歌曲</h3><p>直接找到想听的旋律。</p></div><div><span class="mono">02</span><h3>专辑</h3><p>按一张作品的顺序慢慢听。</p></div><div><span class="mono">03</span><h3>艺术家</h3><p>回到熟悉的声音。</p></div></div></div>
+  </section>
+  <section id="interfaces" class="theme-section section-pad">
+    <div class="wrap"><div class="section-meta"><span class="mono">02 / MAKE IT YOURS</span><span>界面，也有偏好</span></div><div class="split-heading" data-reveal><h2>不止一种风格。<br />不变的是你的音乐。</h2><p>MIUIX、Liquid、Material 3。<br />在三种界面表达之间，找一个看着舒服、用着顺手的选择。</p></div><ThemeStudio client:visible /></div>
+  </section>
+  <section class="listening-manifesto">
+    <div class="groove-lines" aria-hidden="true">{Array.from({ length: 40 }, (_, i) => <i style={`left:${i * 3.5}%;height:${35 + Math.sin(i * .32) * 22}%`} />)}</div>
+    <div class="wrap manifesto-content"><div class="section-meta"><span class="mono">03 / LESS NOISE</span><span>把节奏交还给自己</span></div><h2><span class="manifesto-word">有时，看见声音。</span><br /><span class="manifesto-word">有时，只想安静地听。</span></h2><div class="manifesto-bottom"><p>动效可以有存在感，也应该允许退出。<br />本站随时可以减少动态，让阅读与操作回到平静。</p><a class="round-link" href={`${base}/experience/`} aria-label="打开独立听音室"><Icon name="arrow" size={27} /></a></div></div>
+  </section>
+  <section class="boundary-section wrap section-pad">
+    <div class="section-meta"><span class="mono">04 / CLEAR BOUNDARIES</span><span>能做什么，就说什么</span></div>
+    <div class="boundary-layout"><h2 data-reveal>平台入口，<br />边界说清楚。</h2><div class="boundary-copy" data-reveal><p class="large-copy">不把“网页登录”，<br />称作“曲库已接入”。</p><p>当前预览中提供的官方网页入口与会话确认，不代表已经获得平台歌单、会员权益、播放地址或下载能力。</p><p>音乐来源与实际可用能力，以版本说明和平台自身规则为准。没有曲库互通的承诺，也没有“全平台畅听”的话术。</p><a class="inline-link" href={`${base}/about/#boundaries`}>了解当前边界<Icon name="arrow" size={17} /></a></div></div>
+  </section>
+  <section class="progress-section section-pad"><div class="wrap"><div class="section-meta"><span class="mono">05 / IN THE MAKING</span><span>有进展，再分享</span></div><div class="progress-layout"><div data-reveal><h2>还在打磨。<br />一步一步来。</h2><p>不把计划写成已经实现的功能。<br />这里记录已经发生的变化。</p><a class="inline-link" href={`${base}/updates/`}>查看开发近况<Icon name="arrow" size={17} /></a></div><article class="release-excerpt" data-reveal><div class="release-top"><time datetime={content.release.date}>2026.08.25</time><span>开发预览</span></div><h3>{content.release.version}</h3><p>{content.release.summary}</p><div class="release-changes">{content.release.changes.map((change, index) => <div><span class="mono">0{index + 1}</span><span>{change.title}</span></div>)}</div><span class="release-availability">{content.release.availability}</span></article></div></div></section>
+  <section class="faq-section wrap section-pad"><div class="section-meta"><span class="mono">06 / A FEW ANSWERS</span><span>你可能想问</span></div><div class="faq-layout"><h2 data-reveal>先说清楚。</h2><div>{content.faq.map((faq, i) => <details class="faq" name="faq"><summary><span class="mono">0{i + 1}</span><h3>{faq.question}</h3><span class="faq-plus" aria-hidden="true" /></summary><p>{faq.answer}</p></details>)}</div></div></section>
+  <section class="closing"><div class="wrap"><span class="mono">STILL FINDING OUR RHYTHM.</span><h2>好听的，<br />慢慢来。</h2><div><p>继续把眼前的体验做好。<br />下一次见面，敬请期待。</p><a class="button button-dark" href={`${base}/experience/`}>先来听一会儿<Icon name="arrow" /></a></div></div></section>
+</Site>
