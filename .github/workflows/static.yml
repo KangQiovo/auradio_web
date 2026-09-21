@@ -1,7 +1,7 @@
 name: Verify and publish Auradio website
 on:
   push:
-    branches: [main, 'site/interactive-astro']
+    branches: [main, 'site/interactive-editorial']
   pull_request:
   workflow_dispatch:
 permissions:
