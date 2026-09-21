@@ -1,0 +1,35 @@
+name: Prepare website toolchain
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/prepare-toolchain.yml']
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve exact versions and install without lifecycle scripts
+        run: |
+          mkdir toolchain && cd toolchain
+          printf '%s\n' '{"name":"auradio-web","version":"1.0.0","private":true,"type":"module","engines":{"node":">=22.12.0"},"scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0","test":"node --test tests/*.test.mjs"}}' > package.json
+          for pkg in motion animejs three; do
+            version=$(npm view "$pkg" version)
+            npm install --save-exact --ignore-scripts --no-audit --no-fund "$pkg@$version"
+          done
+          version=$(npm view vite version)
+          npm install --save-dev --save-exact --ignore-scripts --no-audit --no-fund "vite@$version"
+          cat package.json
+          npm audit --omit=dev --audit-level=high
+          cd ..
+          tar -czf toolchain.tar.gz toolchain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-toolchain
+          path: toolchain.tar.gz
+          retention-days: 7
