@@ -57,13 +57,13 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 with tempfile.TemporaryDirectory(prefix='auradio-qa-') as directory:
-    public = Path(directory)
-    (public / 'auradio_web').symlink_to(ROOT / 'dist', target_is_directory=True)
+    # Production uses the existing custom domain root, not a repository subpath.
+    public = ROOT / 'dist'
     handler = functools.partial(QuietHandler, directory=str(public))
     server = http.server.ThreadingHTTPServer(('127.0.0.1', 4173), handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    base = 'http://127.0.0.1:4173/auradio_web/'
+    base = 'http://127.0.0.1:4173/'
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(executable_path=args.browser_path, headless=True, args=['--no-sandbox','--enable-unsafe-swiftshader','--use-angle=swiftshader','--mute-audio'])
@@ -122,7 +122,7 @@ with tempfile.TemporaryDirectory(prefix='auradio-qa-') as directory:
                     parsed=urlparse(href)
                     if parsed.scheme or parsed.netloc:
                         continue
-                    path=unquote(parsed.path.removeprefix('/auradio_web/'))
+                    path=unquote(parsed.path.lstrip('/'))
                     target=ROOT/'dist'/path if path else ROOT/'dist/index.html'
                     if target.is_dir():target=target/'index.html'
                     assert target.is_file(), f'Broken internal link: {href}'

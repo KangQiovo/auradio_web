@@ -15,6 +15,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -26,6 +28,8 @@ jobs:
       - run: npm test
       - run: npm run check
       - run: npm run build
+      - name: Stamp the deployment identity
+        run: printf '%s\n' "$GITHUB_SHA" > dist/build-id.txt
       - run: npm audit --omit=dev --audit-level=high
       - name: Install browser test dependencies
         run: |
@@ -58,14 +62,30 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/configure-pages@v5
       - name: Deploy verified build
         id: deployment
         uses: actions/deploy-pages@v5
+      - name: Check the actual public HTTPS site
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: python scripts/live-smoke.py --url "$SITE_URL" --sha "$GITHUB_SHA" --output live-check.json
+      - name: Public deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auradio-live-check
+          path: live-check.json
+          retention-days: 14
