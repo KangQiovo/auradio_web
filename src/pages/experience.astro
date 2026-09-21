@@ -1,14 +1,16 @@
 ---
 import Site from '../layouts/Site.astro';
+import AlbumRoom from '../components/AlbumRoom';
 import AudioStudio from '../components/AudioStudio';
 import Arrow from '../components/Arrow.astro';
 import {route} from '../lib/urls';
 ---
-<Site title="声音体验室 — Auradio" active="experience" description="播放官网原创合成试听，或选择一个本地音频。调整三种声场形态、响应强度、进度与音量；不自动出声，不上传你的文件。">
+<Site title="专辑与声音体验室 — Auradio" active="experience" description="邓紫棋精选作品的官方试听与专辑展示。封面色彩随选曲自然融入页面，也可以用自己的本地音频体验实时声场。">
   <div class="wrap">
-    <header class="page-heading experience-heading"><div><a href={route()} class="breadcrumb">Auradio / 体验室</a><h1>这一刻，<em>听你的。</em></h1></div><p>戴上耳机，选一段声音。<br/>这是独立的网页声音实验，<br/>不是 Android 客户端或在线音乐服务。</p></header>
-    <AudioStudio client:load/>
-    <section class="experience-notes"><div><span>01</span><h3>声音是真的。</h3><p>进度来自浏览器的实际播放时间。三段试听是本项目生成的合成音频，不使用第三方歌曲或平台资源。</p></div><div><span>02</span><h3>文件留在这里。</h3><p>本地文件只在当前页面中读取，不经本站代码上传。兼容格式以浏览器的实际解码能力为准。</p></div><div><span>03</span><h3>动态可以少一点。</h3><p>系统的减少动态偏好会生效，也可以用页脚开关主动关闭。没有 WebGL 时，页面保留静态声场。</p></div></section>
-    <div class="wide-link"><span>想知道客户端实际做到哪一步？</span><a class="text-link" href={route('progress/')}>查看当前进度 <Arrow/></a></div>
+    <header class="page-heading experience-heading album-page-heading"><div><a href={route()} class="breadcrumb">Auradio / 体验室</a><h1>让音乐，<em>染上颜色。</em></h1></div><p>选一首，留一会儿。<br/>封面、文字和背景，慢慢靠近。<br/>独立网页体验，不是客户端画面。</p></header>
+    <AlbumRoom client:load/>
+    <section id="local" class="local-studio-section"><div class="local-studio-heading"><span class="section-number">YOUR OWN RECORDS / 本地声场</span><h2>下一首，听你的。</h2><p>选择自己的音频，试试真实的声音响应。<br/>此区域不读取上方官方播放器中的歌曲。</p></div><AudioStudio client:visible/></section>
+    <section class="experience-notes"><div><span>01</span><h3>在官方播放器里听。</h3><p>选中作品后，主动打开官方试听。播放范围由相应平台决定，官网不存储录音，也不伪造播放进度。</p></div><div><span>02</span><h3>颜色从封面里来。</h3><p>浏览器从封面提取色板，缓存后复用。图片无法取色时保留备用色，不会阻断浏览。</p></div><div><span>03</span><h3>动态可以少一点。</h3><p>尊重系统减少动态偏好，也可以使用页脚开关。没有 WebGL 时，本地声场保留静态插图。</p></div></section>
+    <div class="wide-link"><span>回到音乐，也回到产品本身。</span><a class="text-link" href={route('progress/')}>关于 Auradio <Arrow/></a></div>
   </div>
 </Site>

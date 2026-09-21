@@ -10,10 +10,12 @@ with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=7) as z:
         path=root/name
         if not path.is_file() or path.is_symlink(): continue
         if any(part in ('.git','node_modules','verification','qa-output','delivery-artifact') for part in path.relative_to(root).parts): continue
-        if path.suffix.lower() in ('.woff','.woff2','.ttf','.otf','.ttc','.apk','.map'): raise RuntimeError('Unexpected private/large asset: '+name)
+        if path.suffix.lower() in ('.woff','.woff2','.ttf','.otf','.ttc','.apk','.map','.mp3','.m4a','.flac','.ogg','.wav'): raise RuntimeError('Unexpected private/large asset: '+name)
         z.write(path,'auradio_web/'+name)
     for path in sorted((root/'dist').rglob('*')):
-        if path.is_file(): z.write(path,'auradio_web/'+str(path.relative_to(root)))
+        if path.is_file():
+            if path.suffix.lower() in ('.woff','.woff2','.ttf','.otf','.ttc','.mp3','.m4a','.flac','.ogg','.wav','.map'): raise RuntimeError('Unexpected distributed media: '+path.name)
+            z.write(path,'auradio_web/'+str(path.relative_to(root)))
 sha=hashlib.sha256(archive.read_bytes()).hexdigest()
 (out/'SHA256SUMS.txt').write_text(sha+'  '+archive.name+'\n')
 print(f'PACKAGED {archive.name}: {archive.stat().st_size} bytes; SHA256 {sha}')

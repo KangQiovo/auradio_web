@@ -58,6 +58,8 @@ jobs:
           node scripts/verify-root-build.mjs
           python scripts/root-browser-qa.py
           node --input-type=module -e "import fs from 'node:fs';fs.writeFileSync('dist/site-build.json',JSON.stringify({commit:process.env.GITHUB_SHA,branch:'main'})+'\n')"
+      - name: Observe actual public artwork and official players
+        run: python scripts/check-media-live.py
       - name: Browser evidence
         if: always()
         uses: actions/upload-artifact@v4

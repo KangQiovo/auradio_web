@@ -1,10 +1,11 @@
 ---
 import '../styles/global.css';
+import '../styles/albums.css';
 import { route, repo } from '../lib/urls';
 import Arrow from '../components/Arrow.astro';
 interface Props { title?: string; description?: string; active?: string; light?: boolean }
 const { title = 'Auradio — 听见，也看见', description = 'Auradio 是仍在打磨中的 Android 音乐播放器。了解本地曲库、三种界面主题、当前预发布进度，进入独立的网页声音体验室。', active = 'home', light = false } = Astro.props;
-const links = [{id:'home',label:'概览',href:route()},{id:'experience',label:'体验室',href:route('experience/')},{id:'progress',label:'当前进度',href:route('progress/')},{id:'privacy',label:'使用与隐私',href:route('privacy/')}];
+const links = [{id:'home',label:'概览',href:route()},{id:'experience',label:'体验室',href:route('experience/')},{id:'progress',label:'关于进展',href:route('progress/')},{id:'privacy',label:'使用与隐私',href:route('privacy/')}];
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 <!doctype html>
@@ -22,6 +23,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <script is:inline>try{if(localStorage.getItem('auradio.motion')==='reduce')document.documentElement.dataset.motion='reduce'}catch{}</script>
   </head>
   <body class:list={[{ 'page-light': light }]}>
+    <div class="page-ambience" aria-hidden="true"><div></div><div></div></div>
     <a class="skip-link" href="#main">跳至正文</a>
     <header class="site-header">
       <div class="nav-shell">
@@ -37,7 +39,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <footer class="site-footer">
       <div class="footer-main wrap">
         <div><a class="brand footer-brand" href={route()}><img src={route('brand/auradio.svg')} width="46" height="46" alt=""/><span>auradio</span></a><p>音乐在前，界面在后。</p></div>
-        <div class="footer-links"><a href={route('progress/')}>版本与进度</a><a href={route('privacy/')}>使用与隐私</a><a href={route('credits/')}>技术鸣谢</a><a href={`${repo}/issues`} target="_blank" rel="noopener noreferrer">反馈官网问题 <Arrow diagonal/></a></div>
+        <div class="footer-links"><a href={route('progress/')}>关于进展</a><a href={route('privacy/')}>使用与隐私</a><a href={route('credits/')}>技术鸣谢</a><a href={`${repo}/issues`} target="_blank" rel="noopener noreferrer">反馈官网问题 <Arrow diagonal/></a></div>
         <div class="footer-note"><p>ANDROID · IN DEVELOPMENT</p><span>当前为预发布阶段<br/>不提供公开安装包下载</span></div>
       </div>
       <div class="footer-bottom wrap"><span>© 2026 KangQi · Auradio</span><button type="button" data-motion-toggle aria-pressed="false">减少动态<span class="toggle-track" aria-hidden="true"></span></button><a href={repo} target="_blank" rel="noopener noreferrer">官网源代码 <Arrow diagonal/></a></div>

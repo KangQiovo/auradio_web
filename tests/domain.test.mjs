@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { clamp, formatTime, validateAudio, getTrackTitle } from '../src/lib/audio.mjs';
-import { release, platforms, providers, motionSources } from '../src/lib/content.mjs';
+import { product, platforms, providers, motionSources } from '../src/lib/content.mjs';
 
 test('clamp handles invalid values and bounds', () => {
   assert.equal(clamp(NaN, 0, 1), 0);
@@ -28,12 +28,12 @@ test('local titles are display text, not HTML or filesystem paths', () => {
   assert.equal(getTrackTitle('音乐\u0000.wav'), '音乐');
   assert.equal(getTrackTitle(''), '本地音频');
 });
-test('release copy is tied to the inspected prerelease, not stale main', () => {
-  assert.equal(release.version, '0.1.0-demo10-fix2');
-  assert.equal(release.date, '2026-08-25');
-  assert.equal(release.prerelease, true);
-  assert.equal(release.publicDownload, null);
-  assert.equal(release.languages, 16);
+test('product copy exposes only a stage and public capabilities', () => {
+  assert.equal(product.prerelease, true);
+  assert.equal(product.publicDownload, null);
+  assert.equal(product.version, undefined);
+  assert.equal(product.date, undefined);
+  assert.equal(product.languages, 16);
 });
 test('unreleased platforms and web-only providers cannot appear connected', () => {
   assert.ok(platforms.filter(p => p.name !== 'Android').every(p => p.available === false));

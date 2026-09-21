@@ -1,16 +1,13 @@
 ---
 import Site from '../layouts/Site.astro';
 import Arrow from '../components/Arrow.astro';
-import {release,platforms,changes} from '../lib/content.mjs';
 import {route,repo} from '../lib/urls';
 ---
-<Site title="当前进度与版本记录 — Auradio" active="progress" light description="Auradio Android Demo 10 Fix2，发布于 2026-08-25。查看预发布进度、修复记录、Android 支持范围与简要开发动态。">
+<Site title="关于进展 — Auradio" active="progress" light description="Auradio 从 Android 本地聆听开始，仍在预发布打磨阶段。更多消息，准备好后再与你分享。">
   <div class="wrap">
-    <header class="page-heading"><a class="breadcrumb" href={route()}>Auradio / 当前进度</a><h1>正在打磨，<br/>还没有完成。</h1><p>分享已经落地的改进，不提前许诺尚未完成的功能。<br/>信息核对日期：<time datetime={release.audited}>{release.audited}</time>。更多消息，准备好后再说。</p></header>
-    <section class="current-release" aria-label="当前版本"><div class="current-release-title"><span class="overline">ANDROID · PRE-RELEASE</span><h2>Demo 10<br/><em>Fix 2</em></h2><time datetime={release.date}>2026 / 08 / 25</time></div><div class="current-release-details"><span class="release-state">预发布</span><h3>0.1.0-demo10-fix2</h3><p>本轮集中修复官方网页会话返回、检查更新页大型卡片布局和播放器设置触控滚动。</p><dl><div><dt>最低系统</dt><dd>Android {release.minAndroid}</dd></div><div><dt>客户端主题</dt><dd>MIUIX / Liquid / Material 3</dd></div><div><dt>客户端语言</dt><dd>{release.languages} 种</dd></div></dl><div class="download-state"><strong>公开下载尚未开放</strong><p>准备好与大家见面时，会在这里公布。在此之前，可以先试试官网的声音体验室。</p></div></div></section>
-    <section class="progress-section"><div class="split-heading"><span class="section-number">版本记录</span><h2>改动，按时间留下。</h2></div><div class="changelog">{changes.map((c,i)=><article><time datetime={c.date}>{c.date}</time><div><span class="overline">ANDROID PRE-RELEASE</span><h3>{c.name}</h3><p>{c.summary}</p><details open={i===0}><summary>查看本次改动 <span class="disclosure" aria-hidden="true"></span></summary><ul>{c.items.map(item=><li>{item}</li>)}</ul></details><code>{c.version}</code></div></article>)}</div></section>
-    <section class="progress-section"><div class="split-heading"><span class="section-number">接下来</span><h2>更多可能，<br/>留一点期待。</h2></div><div class="platform-table">{platforms.map(p=><div class="platform-row"><h3>{p.name}</h3><span class:list={['platform-status',{'available':p.available}]}>{p.status}</span><p>{p.note}</p></div>)}</div></section>
-    <section class="release-boundaries progress-section"><h2>这版仍有这些边界。</h2><div><article><span>01</span><h3>网页会话不是曲库授权。</h3><p>“官方网页会话已确认”只表示用户完成网页操作并主动返回。不代表获取到平台 Token、歌单、播放地址、歌词、会员权益或下载能力。</p></article><article><span>02</span><h3>体验还在不断打磨。</h3><p>不同设备、系统和网络环境下的体验仍需继续验证。这一阶段我们更关心实际使用中的反馈，不作普遍稳定性的承诺。</p></article><article><span>03</span><h3>预发布不是稳定性承诺。</h3><p>当前仍处于 Demo 修复阶段。是否适合日常使用，应以实际设备上的结果和后续版本说明为准。</p></article></div></section>
-    <div class="wide-link"><span>发现官网描述与版本情况不一致？</span><a class="text-link dark-link" href={`${repo}/issues`} target="_blank" rel="noopener noreferrer">反馈信息问题 <Arrow diagonal/></a></div>
+    <header class="page-heading"><a class="breadcrumb" href={route()}>Auradio / 关于进展</a><h1>值得留下的，<br/>是体验。</h1><p>从 Android 开始，把日常聆听做得更顺手。<br/>还有很多细节值得打磨，不急着把未来都说完。</p></header>
+    <section class="current-release" aria-label="产品状态"><div class="current-release-title"><span class="overline">A WORK IN PROGRESS</span><h2>正在<br/><em>打磨。</em></h2><span>音乐在前，界面在后。</span></div><div class="current-release-details"><span class="release-state">预发布阶段</span><h3>先把眼前的音乐听好。</h3><p>围绕本地曲库，按歌曲、专辑和艺术家找到内容；用 MIUIX、Liquid 或 Material 3，选择自己习惯的界面。</p><p>当前仍以 Android 为主。网页中的专辑与声场是独立体验，不等同于客户端已实现的界面或功能。</p><div class="download-state"><strong>公开下载暂未开放</strong><p>准备好与大家见面时，会在这里公布。现在，可以先去体验室坐一会儿。</p><a class="text-link" href={route('experience/')}>进入体验室 <Arrow/></a></div></div></section>
+    <section class="progress-section anticipation-section"><span class="section-number">A LITTLE MORE TO COME</span><h2>更多可能，<br/>留一点期待。</h2><p>继续打磨聆听中的细节。<br/>更具体的消息，准备好后再与你分享。</p></section>
+    <div class="wide-link"><span>遇到官网体验问题？</span><a class="text-link dark-link" href={`${repo}/issues`} target="_blank" rel="noopener noreferrer">告诉我们 <Arrow diagonal/></a></div>
   </div>
 </Site>
