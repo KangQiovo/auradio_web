@@ -37,11 +37,12 @@ jobs:
         run: |
           npm run preview -- --host 127.0.0.1 --port 4321 >/tmp/auradio-preview.log 2>&1 &
           SERVER_PID=$!
-          trap 'kill "$SERVER_PID" || true' EXIT
+          trap 'kill "$SERVER_PID" || true; cat /tmp/auradio-preview.log' EXIT
           for i in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:4321/auradio_web/ >/dev/null; then break; fi
             sleep 1
           done
+          curl --fail --silent http://127.0.0.1:4321/auradio_web/ >/dev/null
           python tests/browser_smoke.py
       - uses: actions/upload-artifact@v4
         if: always()
