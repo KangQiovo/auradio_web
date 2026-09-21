@@ -25,7 +25,7 @@ def tone():
         f.writeframes(raw)
     return buf.getvalue()
 TONE=tone();payload=base64.b64encode(TONE).decode()
-FRAME='''<!doctype html><meta charset="utf-8"><title>Test oscillator</title><button id="start">Play test tone</button><audio id="a" loop src="data:audio/wav;base64,'''+payload+'''"></audio><script>document.querySelector('#start').onclick=()=>document.querySelector('#a').play();</script>'''
+FRAME='''<!doctype html><meta charset="utf-8"><title>Test oscillator</title><button id="start" disabled>Play test tone</button><audio id="a" loop src="data:audio/wav;base64,'''+payload+'''"></audio><script>const button=document.querySelector('#start');button.onclick=()=>document.querySelector('#a').play();button.disabled=false;</script>'''
 def fixtures(context):
     def route(r):
         u=r.request.url
@@ -36,6 +36,14 @@ def fixtures(context):
 def visit(page,path='experience/'):
     page.goto(base+path,wait_until='domcontentloaded');expect(page.locator('h1')).to_be_visible()
     page.wait_for_function('Array.from(document.querySelectorAll(\'astro-island[client="load"]\')).every(e=>!e.hasAttribute("ssr"))')
+def play_fixture(page):
+    # The large data-URL fixture parses after the visible button. The button remains disabled
+    # until its handler is installed; click only then, and prove actual playback before FFT.
+    handle=page.locator('.official-preview iframe').element_handle()
+    frame=handle.content_frame()
+    expect(frame.locator('#start')).to_be_enabled()
+    frame.locator('#start').click()
+    frame.wait_for_function('!document.querySelector("audio").paused && document.querySelector("audio").currentTime>.05')
 def field(page):
     el=page.locator('.audio-studio .field-canvas');el.scroll_into_view_if_needed()
     page.wait_for_selector('.audio-studio canvas');expect(el).to_have_attribute('data-field-state','rest',timeout=7000)
@@ -91,7 +99,7 @@ with sync_playwright() as p:
         # Real tab capture of a controlled cross-origin iframe. The parent cannot inspect its audio node.
         page.get_by_role('tab',name='选择 于是',exact=True).click()
         page.get_by_role('button',name='打开官方试听').click()
-        page.frame_locator('.official-preview iframe').locator('#start').click()
+        play_fixture(page)
         page.bring_to_front();page.get_by_role('button',name='同步当前标签页声音',exact=True).click()
         expect(page.get_by_role('button',name='停止声音同步',exact=True)).to_be_visible(timeout=20000)
         meter=page.locator('.live-spectrum-panel .spectrum-strip canvas');meter.scroll_into_view_if_needed()
@@ -103,7 +111,7 @@ with sync_playwright() as p:
         for name in ['自由的你','G.E.M.']:
             page.get_by_role('tab',name='选择 '+name,exact=True).click()
             page.get_by_role('button',name='打开官方试听').click()
-            page.frame_locator('.official-preview iframe').locator('#start').click()
+            play_fixture(page)
             print('CAPTURE_SWITCH',name,page.frame_locator('.official-preview iframe').locator('audio').evaluate('(a)=>({paused:a.paused,time:a.currentTime,ready:a.readyState,duration:a.duration})'),flush=True)
             meter.scroll_into_view_if_needed()
             page.wait_for_function('Number(document.querySelector(".live-spectrum-panel canvas").dataset.rms)>.04')
