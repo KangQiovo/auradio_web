@@ -91,15 +91,16 @@ html[data-album] .listening-invite{background:transparent}
 @media(min-width:1600px){.album-stage{padding-left:55px;padding-right:55px}}
 @media(max-width:1000px){.album-stage{gap:42px;padding:46px 0 25px}.album-heading-space{min-height:295px}.album-description{font-size:13px}.album-rail>button{gap:12px;padding:12px}.album-rail-art{width:48px;height:48px}.preview-provider{font-size:9px}.album-listen-button{gap:9px;padding:14px}.album-source-title{gap:12px}}
 @media(max-width:700px){
-  .record-section-heading{grid-template-columns:1fr;gap:22px;margin-bottom:40px}.record-section-heading p{font-size:14px}.record-section-heading h2{font-size:40px}
+  .record-section-heading{grid-template-columns:minmax(0,1fr);gap:22px;margin-bottom:40px}.record-section-heading p{font-size:14px}.record-section-heading h2{font-size:40px}
   .album-page-heading{padding-top:48px;padding-bottom:35px}.album-page-heading h1{font-size:42px}.album-page-heading>p{font-size:13px;line-height:1.9}
-  .album-room-top{padding-bottom:16px;font-size:9px;letter-spacing:.08em}.album-room-top>span:last-child{font-size:10px}
-  .album-stage{grid-template-columns:1fr;gap:30px;padding:32px 0 22px;align-items:start}.album-room-compact .album-stage{padding-top:32px}
-  .album-art-stack{width:min(100% - 28px,360px)}.album-art-footer{width:min(100% - 28px,360px);padding-top:12px}.album-art-footer .icon-button{width:36px;height:36px;min-width:36px}.cover-halo{inset:-7%}
+  .album-room-top{padding-bottom:16px;font-size:9px;letter-spacing:.08em;flex-wrap:wrap}.album-room-top>span:last-child{font-size:10px}
+  .album-stage{grid-template-columns:minmax(0,1fr);gap:30px;padding:32px 0 22px;align-items:start}.album-room-compact .album-stage{padding-top:32px}
+  .album-art-stack{width:min(100% - 28px,360px)}.album-art-footer{width:min(100% - 28px,360px);padding-top:12px}.album-art-footer .icon-button{width:36px;height:36px;min-width:36px}.cover-halo{inset:0}
   .album-copy{padding:0 4px}.album-copy h2,.album-room-compact .album-copy h2{font-size:46px;margin:12px 0}.album-heading-space{min-height:235px}.album-description{max-width:38ch;font-size:13px;margin:15px 0 18px}.album-source-title{padding-bottom:18px}.album-source-title>h3{font-size:12px;max-width:29ch}.album-artist{font-size:13px}.album-artist>span{font-size:10px}
   .album-listen-button{min-height:54px;font-size:13px;padding:14px}.preview-provider{font-size:10px}.preview-scope,.embed-help{font-size:11px}.official-source-link{font-size:12px}
   .album-rail{display:flex;gap:10px;padding:10px 0;scroll-padding-left:4px;margin-top:12px}.album-rail>button,.album-rail>button:first-child,.album-rail>button:last-child{flex:0 0 76%;padding:12px;border:1px solid #ffffff16;border-radius:4px;gap:12px}.album-rail-art{width:52px;height:52px}.album-rail b{font-size:13px}.album-rail small{font-size:10px}.album-room-footnote{font-size:10px;line-height:1.8;margin-top:16px}
   .local-studio-section{margin-top:72px;padding-top:42px}.local-studio-heading{margin-bottom:30px}.local-studio-heading p{font-size:13px}.anticipation-section{padding-top:65px;padding-bottom:65px}
+  .anticipation-cover>div{flex-wrap:wrap;gap:10px}.album-art-footer{flex-wrap:wrap}
 }
 @media(max-width:360px){.album-room-top{gap:8px}.album-room-top>span:last-child{font-size:9px}.album-page-heading h1{font-size:36px}.album-copy h2,.album-room-compact .album-copy h2{font-size:40px}.preview-provider{font-size:9px}.album-art-stack,.album-art-footer{width:calc(100% - 14px)}}
 @media(prefers-reduced-motion:reduce){.page-ambience>div,.album-room *,.site-header,.site-footer,.light-section{transition:none!important;scroll-behavior:auto!important}.album-art-plane{transform:none!important}.page-ambience>div{will-change:auto}.album-listen-button:hover{transform:none}}
