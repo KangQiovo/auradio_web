@@ -8,7 +8,7 @@ test('the three selected records use the requested exact descriptions',()=>{
   assert.deepEqual(albums.map(a=>a.description),[
     '做你想做的，你是自由的！',
     '成长要学会独处，虽然有一点孤独。',
-    'Get everybody moving.',
+    '',
   ]);
 });
 test('album colour has local scopes and no global page tint selectors',()=>{

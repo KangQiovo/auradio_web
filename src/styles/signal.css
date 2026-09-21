@@ -1,0 +1,21 @@
+/* Pointer input wakes the visual independently of transport. Vertical touch scroll remains native. */
+.field-canvas{touch-action:pan-y;cursor:crosshair;outline-offset:-5px}
+.field-canvas:focus-visible{outline:2px solid var(--brand)}
+.field-interaction-hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;color:var(--muted);font-size:10px;pointer-events:none;letter-spacing:.03em}
+.live-spectrum-panel{border-top:1px solid #ffffff25;margin-top:24px;padding-top:16px;min-width:0}
+.live-spectrum-title,.spectrum-caption{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:11px;color:#bac9c2}
+.live-spectrum-title>span:last-child{font-size:9px;letter-spacing:.1em}
+.spectrum-strip{min-width:0;color:var(--album-accent,var(--brand));margin-top:12px}
+.spectrum-strip canvas{width:100%;height:62px;display:block;color:inherit}
+.spectrum-caption{font-size:10px;margin-top:9px;color:#a9bcb1;flex-wrap:wrap}
+.live-spectrum-actions{display:flex;gap:12px;align-items:center;margin-top:15px;flex-wrap:wrap}
+.signal-button{border:1px solid #ffffff40;border-radius:4px;min-height:44px;padding:9px 14px;font-size:12px;color:#e3ede6;background:#ffffff08}
+.signal-button:disabled{opacity:.6}.signal-button:hover:not(:disabled){background:#ffffff12}
+.signal-cancel{font-size:12px;min-height:44px;text-decoration:underline}
+.signal-help,.signal-message,.signal-privacy p{font-size:11px;line-height:1.8;color:#afbeb6;margin-top:12px}
+.signal-message{color:#eed7ad}.signal-privacy{margin-top:10px;font-size:11px;color:#afbeb6}
+.signal-privacy summary{min-height:32px;display:flex;align-items:center;text-decoration:underline;text-underline-offset:3px}
+.signal-privacy p{padding-bottom:10px;margin-top:5px}
+.studio-view>.spectrum-strip{margin:0 30px 22px}.studio-view>.spectrum-strip canvas{height:55px}
+.album-description:empty{min-height:1.9em}
+@media(max-width:700px){.live-spectrum-panel{margin-top:20px}.spectrum-strip canvas{height:52px}.studio-view>.spectrum-strip{margin:0 19px 20px}.field-interaction-hint{font-size:9px}.signal-button{min-height:46px}.signal-help,.signal-privacy p{font-size:11px}}

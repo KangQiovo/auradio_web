@@ -5,6 +5,7 @@ import {extractCoverPalette, paletteFromRgb} from '../lib/palette.mjs';
 import {useMotionPreference} from '../lib/useMotionPreference';
 import {Icon} from './Icon';
 import {applyAmbient} from '../lib/ambient.mjs';
+import LiveSpectrum from './LiveSpectrum';
 
 type Palette=ReturnType<typeof paletteFromRgb>;
 /** Official playback is intentionally separate from the local-file audio analyser. */
@@ -110,7 +111,7 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
               <span className="album-eyebrow">{active.label}</span>
               <h2>{active.title}</h2>
               <p className="album-artist">{active.artist}{active.id==='gem'&&<span>Get Everybody Moving</span>}</p>
-              <p className="album-description">{active.description}</p>
+              <p className="album-description" aria-hidden={!active.description}>{active.description}</p>
               <div className="album-source-title"><span>收录于</span><h3>{active.album}</h3></div>
             </motion.div>
           </AnimatePresence>
@@ -125,6 +126,7 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
           <a className="official-source-link" href={active.sourceUrl} target="_blank" rel="noopener noreferrer">在 {active.provider} 打开作品 <Icon name="arrow"/></a>
           {player&&<p className="embed-help">播放器未显示或无法试听时，可通过上方链接前往官方平台。页面不会绕过平台限制。</p>}
         </div>
+        <LiveSpectrum/>
       </div>
     </div>
     <div className="album-rail" role="tablist" aria-label="选择试听专辑" onKeyDown={e=>{
@@ -137,6 +139,6 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
       <span className="album-rail-art">{!artErrors[album.id]&&<img src={album.artwork} width="64" height="64" alt="" decoding="async" loading="lazy" referrerPolicy="no-referrer" onError={()=>setArtErrors(old=>({...old,[album.id]:true}))}/>}<i aria-hidden="true">0{i+1}</i></span>
       <span><b>{album.title}</b><small>{i===2?'Get Everybody Moving':album.album}</small></span><span className="album-rail-mark" aria-hidden="true">{i===index?'●':'↗'}</span>
     </button>)}</div>
-    <p className="album-room-footnote">封面取色随选曲更新 · 未经点击不加载第三方播放器 · 作品及封面权利归各自权利人，展示不代表艺人与 Auradio 存在合作。</p>
+    <p className="album-room-footnote">封面取色随选曲更新 · 频谱需主动同步声音 · 未经点击不加载第三方播放器 · 作品及封面权利归各自权利人，展示不代表艺人与 Auradio 存在合作。</p>
   </section>;
 }

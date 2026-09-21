@@ -76,7 +76,7 @@ def check_scoped_colours(page,label):
     expect(scope).to_have_count(1)
     descriptions=[('自由的你','做你想做的，你是自由的！'),
                   ('于是','成长要学会独处，虽然有一点孤独。'),
-                  ('G.E.M.','Get everybody moving.')]
+                  ('G.E.M.','')]
     accents=[]
     for title,text in descriptions:
         page.get_by_role('tab',name='选择 '+title,exact=True).click()

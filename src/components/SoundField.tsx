@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMotionPreference } from '../lib/useMotionPreference';
 import type { FieldMode, FieldSettings } from '../lib/field';
-const silence = () => 0;
-interface Props {mode?:FieldMode;intensity?:number;animated?:boolean;level?:()=>number;className?:string}
-export default function SoundField({mode='ribbon',intensity=0.55,animated=true,level=silence,className=''}:Props) {
+interface Props {mode?:FieldMode;intensity?:number;animated?:boolean;className?:string}
+export default function SoundField({mode='ribbon',intensity=0.55,animated=true,className=''}:Props) {
   const host = useRef<HTMLDivElement>(null);
   const instance = useRef<{sync:()=>void;destroy:()=>void} | null>(null);
   const reduced = useMotionPreference();
-  const settings = useRef<FieldSettings>({mode,intensity,animated,reduced,level});
+  const settings = useRef<FieldSettings>({mode,intensity,animated,reduced});
   const [ready,setReady] = useState(false);
   const [failed,setFailed] = useState(false);
-  useEffect(() => {settings.current={mode,intensity,animated,reduced,level};instance.current?.sync();},[mode,intensity,animated,reduced,level]);
+  useEffect(() => {settings.current={mode,intensity,animated,reduced};instance.current?.sync();},[mode,intensity,animated,reduced]);
   useEffect(() => {
     const element=host.current;
     if(!element) return;
@@ -37,9 +36,9 @@ export default function SoundField({mode='ribbon',intensity=0.55,animated=true,l
     });
     return <polyline key={i} points={points.join(' ')} fill="none" stroke={i<20?'#43c6a2':'#ceddcf'} strokeWidth="0.9" opacity="0.7"/>;
   }),[]);
-  return <div className={`sound-field ${className}`} role="img" aria-label={failed?'静态声场插图，当前浏览器无法呈现 WebGL 交互':'由线条构成的可交互声场，网页视觉实验'}>
+  return <div className={`sound-field ${className}`} role="group" aria-label={failed?'静态声场插图，当前浏览器无法呈现 WebGL 交互':'由线条构成的可交互声场，网页视觉实验'}>
     <svg className={`field-fallback ${ready?'is-hidden':''}`} viewBox="0 0 600 430" aria-hidden="true">{lines}</svg>
-    <div ref={host} className="field-canvas" aria-hidden="true"/>
-    {failed && <span className="field-status">静态兼容模式</span>}
+    <div ref={host} className="field-canvas" tabIndex={ready && !reduced ? 0 : -1} role="button" aria-disabled={reduced || !ready} aria-label="互动声场：滑动鼠标或手指拨散线条；键盘方向键、回车或空格也可操作"/>
+    {failed ? <span className="field-status">静态兼容模式</span> : <span className="field-interaction-hint">{reduced ? '减少动态已开启' : '移动或轻触，拨散再聚合'}</span>}
   </div>;
 }

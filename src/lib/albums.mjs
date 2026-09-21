@@ -25,7 +25,7 @@ export const albums = Object.freeze([
   {
     id: 'gem', title: 'G.E.M.', catalogTitle: 'G.E.M. (Get Everybody Moving)', artist: 'G.E.M. 邓紫棋',
     album: 'The Best of G.E.M. 2008-2012 (Deluxe Version)', format: '精选集选曲', label: '03 / 跟着节奏走',
-    description: 'Get everybody moving.',
+    description: '',
     artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music6/v4/2e/23/c8/2e23c89b-580b-4a86-1a56-c6da0e92a182/887158493607_Cover.jpg/600x600bb.jpg',
     sourceUrl: 'https://music.apple.com/kr/album/g-e-m-get-everybody-moving/666994246?i=666994738', provider: 'Apple Music',
     embedUrl: 'https://embed.music.apple.com/kr/album/g-e-m-get-everybody-moving/666994246?i=666994738&theme=dark',
