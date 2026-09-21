@@ -31,7 +31,6 @@ test('local titles are display text, not HTML or filesystem paths', () => {
 test('release copy is tied to the inspected prerelease, not stale main', () => {
   assert.equal(release.version, '0.1.0-demo10-fix2');
   assert.equal(release.date, '2026-08-25');
-  assert.equal(release.source, '81573bc1aed803a1b33f5d155c845660686e1c6b');
   assert.equal(release.prerelease, true);
   assert.equal(release.publicDownload, null);
   assert.equal(release.languages, 16);

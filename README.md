@@ -1,62 +1,37 @@
 # Auradio 官网
 
-Auradio 的中文产品官网：Astro 7 + React 19 + TypeScript，部署至 GitHub Pages。
+Astro + React + TypeScript 多页面官网，实际使用 Motion、GSAP 与 Three.js，沿用获准的 A + 声波品牌图标。
 
-## 访问
+## 开发与运行
 
-- 官网：https://kangqiovo.github.io/auradio_web/
-- 体验室：https://kangqiovo.github.io/auradio_web/experience/
-- 版本进度：https://kangqiovo.github.io/auradio_web/progress/
-
-## 真实内容基线
-
-2026-09-21 核对的 Android 最新预发布为 `0.1.0-demo10-fix2`，发布于 `2026-08-25`，对应不可变提交 `81573bc1aed803a1b33f5d155c845660686e1c6b`。旧 main 的 Flutter README 不作为当前发布线依据。公开官网不改变客户端源码的私有状态，也不发布应用安装包。
-
-目前仅描述已有本地曲库结构、歌曲/专辑/艺术家分类、三套客户端主题、16 种客户端语言、已核对修复记录和官方平台入口边界。其他平台没有公开版本或承诺日期。更新文案请修改 `src/lib/content.mjs` 并同步检查来源，不在多个页面分别硬编码新功能承诺。
-
-## 页面与交互
-
-- 概览：编辑式产品介绍、Three.js 声场、主题与曲库网页示意、平台入口解释、FAQ。
-- 体验室：原创合成试听、本地音频选择、真实播放/暂停/时间/拖动/音量、三种声场与响应强度、全屏。
-- 当前进度：预发布详情、版本记录、平台状态、已知限制。
-- 使用与隐私：本站本地文件、偏好保存、托管与平台边界说明。
-- 技术鸣谢、许可索引、404、robots 和 sitemap。
-
-网页演示不是 Android 客户端截图，也不是在线曲库。没有公开下载占位按钮、虚构用户数、假播放进度、注册或订阅表单。
-
-## 动效来源
-
-2026-09-21 公开 Star 审计核对了维护者的 680 个 Star；本官网实际使用其中三个项目：
-
-| 项目 | 用途 | 许可 |
-| --- | --- | --- |
-| motiondivision/motion | 主题与选择状态、界面过渡 | MIT |
-| greensock/GSAP | 章节与阅读进度关联，原生滚动不被接管 | GSAP Standard License，不是 MIT |
-| mrdoob/three.js | 一个 draw call 的声场线条、指针响应、Web Audio 响应 | MIT |
-
-沿用项目原有 A + 声波品牌图标。声音与几何由本站代码生成；不引入版权歌曲、专辑封面、远程字体或分析 SDK。构建输出保留所用主要运行时的许可证；GSAP 保留声明并链接完整许可条款。
-
-## 本地运行
-
-要求 Node.js 22.12 或以上兼容版本。
+要求 Node.js 22.12 或以上兼容版本：
 
 ```sh
 npm ci
-npm run dev
 npm test
 npm run check
 npm run build
-npm run preview
+npm start
 ```
 
-`predev` / `prebuild` 会生成三段 24 秒 PCM 合成音频与许可索引。音频不自动播放；默认音量 45%。本地文件上限 100 MiB，只通过 object URL 读取，替换或卸载时释放。脚本不上传音频。
+打开终端打印的本机地址，默认 `http://127.0.0.1:4173/auradio_web/`。开发模式使用 `npm run dev`。
 
-## 可访问性与性能
+完整交付 ZIP 已附带 dist：解压后 Windows 双击 `start.cmd`，macOS / Linux 运行 `sh start.sh`，不需要重新下载 npm 依赖。启动器支持 Node.js、Python 3 或 Windows PowerShell 后备服务。不要使用 file:// 直接打开 HTML。
 
-导航有键盘焦点、跳转正文、移动菜单和 Escape 关闭。控件使用原生按钮、输入、details 与明确的可访问名称。尊重系统减少动态；页脚开关只保存 `auradio.motion`。Three.js 按视口加载，离屏/后台/静态模式停止循环；清理观察器、监听器、GPU 资源与音频上下文。无 WebGL 时保留静态图形，无 JavaScript 时保留介绍与导航。
+## 页面与交互
 
-## 部署与维护
+概览、声音体验室、当前进度、使用与隐私、技术鸣谢和 404。支持主题示意切换、示例曲库搜索、平台说明选择、FAQ、合成试听与本地文件真实播放、进度和音量控制、三种声场、减少动态与无 WebGL 回退。
 
-仅将 `dist` 部署到 Pages，不把仓库根目录直接当成网站。`astro.config.mjs` 固定 `base: /auradio_web`。更换域名或仓库名时同步修改 `site`、`base`、robots 和 sitemap。
+Motion 管理状态过渡；GSAP 管理滚动关联但不劫持滚轮；Three.js 按需加载声场。Motion / Three.js 为 MIT；GSAP 使用自身 Standard License，不标为 MIT。构建保留第三方许可或声明。
 
-行为测试在 `tests/`；浏览器复核脚本在 `scripts/browser-qa.py`。设计与信息边界见 `docs/site-spec.md`、实施顺序见 `docs/implementation-plan.md`。构建、视觉或审计失败不能当作已发布成功。
+## 公开信息边界
+
+只描述已核对的预发布摘要。未来保留“更多可能，敬请期待”，不发布内部文件、详细路线、客户端源码、凭据或安装包。网页主题与声音体验是独立演示，不是客户端实拍或在线曲库。仅复用获准的品牌标识。
+
+没有自动播放、音频上传、账号表单或分析 SDK。本地音频仅在当前页面播放，文件上限 100 MiB；浏览器解码能力决定格式兼容性。页脚动态偏好只保存在 localStorage。
+
+## 验证与部署
+
+12 个领域/边界/服务器测试。独立 CI 对生产构建完成 46 项真实浏览器检查，涵盖 1440、390、360 像素宽度和实际媒体交互。成功记录：https://github.com/KangQiovo/auradio_web/actions/runs/35584913697
+
+Pages 工作流只部署 dist，不能把整个仓库作为网站根目录。默认路径 `/auradio_web/`；自定义域名须修改 astro.config.mjs、robots 与 sitemap 后重新构建。

@@ -25,9 +25,9 @@ import {route} from '../lib/urls';
       <div class="product-story">
         <div class="story-column">
           <nav class="chapter-nav" aria-label="功能章节"><a href="#library" data-chapter-link="library">本地曲库</a><a href="#themes" data-chapter-link="themes">界面主题</a><a href="#android" data-chapter-link="android">Android 主线</a></nav>
-          <article id="library" data-chapter="library"><span class="story-index">01</span><h3>你的歌，<br/>按熟悉的方式找到。</h3><p>当前 Android 发布线已经有本地曲库的数据与界面结构，按歌曲、专辑和艺术家组织内容，并提供搜索与播放队列相关逻辑。</p><p class="small-note">右侧是可搜索、可切换分类的网页示意。示例名称并非你的实际曲库。</p></article>
+          <article id="library" data-chapter="library"><span class="story-index">01</span><h3>你的歌，<br/>按熟悉的方式找到。</h3><p>当前 Android 预发布围绕本地音乐展开：按歌曲、专辑和艺术家浏览，搜索想听的内容，整理播放队列。</p><p class="small-note">右侧是可搜索、可切换分类的网页示意。示例名称并非你的实际曲库。</p></article>
           <article id="themes" data-chapter="themes"><span class="story-index">02</span><h3>一套播放器，<br/>三种界面选择。</h3><p>MIUIX、Liquid 与 Material 3 是当前客户端支持的三套主题。官网把切换做成了一个小预览，你可以先感受不同表面与控件的关系。</p><p class="small-note">主题预览不是实机截图，不承诺与客户端逐像素一致。</p></article>
-          <article id="android" data-chapter="android"><span class="story-index">03</span><h3>从 Android 开始，<br/>把细节一处处理顺。</h3><p>当前正式开发路线使用 Kotlin / Compose。Demo 10 Fix2 继续修复播放器设置触控、更新页面布局和官方网页会话的返回反馈。</p><a class="text-link dark-link" href={route('progress/')}>阅读这一版改了什么 <Arrow/></a></article>
+          <article id="android" data-chapter="android"><span class="story-index">03</span><h3>从 Android 开始，<br/>把细节一处处理顺。</h3><p>当前从 Android 开始打磨。Demo 10 Fix2 继续改善播放器设置的滑动操作、更新页面的排版，以及官方网页操作后的返回反馈。</p><a class="text-link dark-link" href={route('progress/')}>阅读这一版改了什么 <Arrow/></a></article>
         </div>
         <div class="sticky-preview"><ThemePreview client:visible/></div>
       </div>
@@ -43,7 +43,7 @@ import {route} from '../lib/urls';
     <div class="wrap"><div class="section-intro" data-reveal><span class="section-number">03 / 音乐平台入口</span><h2>本地是本地，<br/>平台是平台。</h2><p>客户端提供官方网页或应用入口。<br/>网页会话确认，不等于原生曲库连接。</p></div><ProviderExplorer client:visible/></div>
   </section>
   <section class="release-teaser section-pad wrap" data-reveal>
-    <div><span class="section-number">04 / 开发记录</span><h2>目前，走到这里。</h2><p>最新已核对的 Android 预发布。<br/>不是正式版，也还没有开放官网公开下载。</p><a class="text-link" href={route('progress/')}>完整进度与平台状态 <Arrow/></a></div>
+    <div><span class="section-number">04 / 开发记录</span><h2>目前，走到这里。</h2><p>当前 Android 预发布。<br/>不是正式版，也还没有开放官网公开下载。</p><a class="text-link" href={route('progress/')}>了解当前版本 <Arrow/></a></div>
     <a class="release-cover" href={route('progress/')}><div><span>ANDROID PRE-RELEASE</span><Arrow diagonal/></div><strong>Demo 10<span>Fix 2</span></strong><div><code>0.1.0-demo10-fix2</code><time datetime={release.date}>{release.date}</time></div></a>
   </section>
   <section id="faq" class="faq-section wrap section-pad"><div><span class="section-number">05 / 你可能想问</span><h2>说得再<br/>具体一点。</h2></div><div class="faq-list">{faqs.map((f,i)=><details open={i===0}><summary>{f.q}<span class="disclosure" aria-hidden="true"></span></summary><p>{f.a}</p></details>)}</div></section>

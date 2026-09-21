@@ -6,6 +6,10 @@ dist/
 !.env.example
 .DS_Store
 qa-output/
+verification/
+delivery-artifact/
+__pycache__/
+*.pyc
 *.log
 public/audio/*.wav
 public/licenses/
