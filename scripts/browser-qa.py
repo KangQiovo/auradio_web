@@ -57,9 +57,11 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 with tempfile.TemporaryDirectory(prefix='auradio-qa-') as directory:
-    # Production uses the existing custom domain root, not a repository subpath.
     public = ROOT / 'dist'
-    handler = functools.partial(QuietHandler, directory=str(public))
+    import sys
+    sys.path.insert(0,str(ROOT))
+    from serve import Handler
+    handler = Handler
     server = http.server.ThreadingHTTPServer(('127.0.0.1', 4173), handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -86,6 +88,7 @@ with tempfile.TemporaryDirectory(prefix='auradio-qa-') as directory:
                     assert len(page.locator('main').inner_text()) > 50
                     assert page.locator('vite-error-overlay, nextjs-portal').count() == 0
                     no_overflow(page, f'desktop {path or "home"}')
+                    page.screenshot(path=str(OUTPUT / (('home' if not path else path.strip('/').replace('.','-'))+'-initial.png')), animations='disabled')
                     passed(f'{path or "home"}: correct title, content, route and no framework overlay')
                 visit(page, base)
                 expect(page.locator('.hero-field-frame canvas')).to_have_count(1)
@@ -110,10 +113,10 @@ with tempfile.TemporaryDirectory(prefix='auradio-qa-') as directory:
                 page.wait_for_function("!document.querySelector('.provider-explorer').closest('astro-island').hasAttribute('ssr')")
                 page.locator('.provider-rail button').filter(has_text='QQ 音乐').click()
                 expect(page.locator('.provider-detail h3')).to_have_text('QQ 音乐')
-                expect(page.locator('.provider-detail')).to_contain_text('不读取网页 Cookie')
+                expect(page.locator('.provider-detail')).to_contain_text('不读取你的平台账号')
                 passed('provider selection updates the correct implementation boundary')
-                page.get_by_text('电脑、鸿蒙和 iPhone 版本什么时候推出？',exact=True).click()
-                expect(page.get_by_text('这些平台有不同的后续路线',exact=False)).to_be_visible()
+                page.get_by_text('接下来，还会有什么？',exact=True).click()
+                expect(page.get_by_text('更多可能，准备好后再与你分享',exact=False)).to_be_visible()
                 passed('FAQ expands with truthful unreleased-platform state')
                 page.locator('.theme-explorer').scroll_into_view_if_needed()
                 page.screenshot(path=str(OUTPUT/'theme-desktop.png'),animations='disabled')

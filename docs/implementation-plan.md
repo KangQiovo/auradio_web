@@ -1,21 +1,9 @@
-# Auradio 交互官网实施计划
+# Auradio 官网
 
-**Goal:** 在 auradio_web 交付真实、可交互且可部署的中文产品官网。
-**Architecture:** Astro 静态多页 + React islands；内容快照与行为逻辑独立；共享布局与视觉规范统一。
-**Tech Stack:** Astro 7、React 19、TypeScript、Motion、GSAP、Three.js。
-**Spec:** site-spec.md
+Astro + React + TypeScript 多页面官网。Motion 负责状态过渡，GSAP 负责原生滚动关联，Three.js 负责按需加载的声场。沿用获准的 A + 声波品牌图标。
 
-## 全局约束
-不得改变应用源码可见性；不得发布应用私有安装包；不得把网页示意称为客户端截图。尊重减少动态和实际媒体事件，默认不自动播放。所有依赖保留准确许可证名称。
+介绍仅包含当前预发布摘要。未来仅保留“更多可能，敬请期待”，不发布内部文档、详细路线、私有源码、凭据或安装包。网页主题与声音体验是独立演示，不是客户端实拍。
 
-## 检查顺序
-1. 先编写 tests/domain.test.mjs，运行 node --test tests/*.test.mjs，确认实现缺失时失败；实现 src/lib/audio.mjs 和 content.mjs 后复跑。
-2. src/layouts/Site.astro 负责导航、SEO 和页脚；styles/global.css 统一排版、色彩与响应式；scripts/site.ts 负责菜单、减少动态和 GSAP 生命周期。
-3. components/SoundField.tsx + lib/field.ts 负责静态回退、Three.js 按需加载和资源释放；AudioStudio.tsx 管理 HTMLAudioElement 的真实事件与本地文件。
-4. ThemePreview.tsx 与 ProviderExplorer.tsx 只呈现明确标注的网页演示；五个信息页面消费相同的 content.mjs 快照。
-5. scripts/generate-audio.mjs 生成三段原创合成试听；构建前生成，不依赖第三方音频、CDN 或版权歌曲。
-6. 运行 npm test、npm run check、npm run build；Playwright 检查所有路由、菜单、控件、真实播放、错误输入、无 JS、减少动态与 390px/1440px 布局，截图后人工检查。
-7. 以中文提交在独立分支交付，复核目标分支是否变化，保留既有工作流；通过构建后发布 dist 到既有 Pages，不发布源码目录作为站点。
+开发要求 Node.js 22.12+。运行 npm ci、npm test、npm run check、npm run build；npm run dev 启动开发。只部署 dist 到 /auradio_web/，不部署项目根目录。
 
-## 高风险输入
-浏览器不支持 WebGL/Web Audio；媒体文件空/过大/无法解码；存储不可用；缩窄屏幕；偏好减少动态；回到后台。每类都必须保留内容与可见反馈，不能让按钮失效或渲染循环泄漏。
+体验室使用原创合成音频，也可读取主动选择的本地音频。默认不自动播放，不上传文件。支持减少动态与静态回退。第三方许可在构建时保存，GSAP 使用自身 Standard License，不标为 MIT。
