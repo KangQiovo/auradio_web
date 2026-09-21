@@ -1,13 +1,14 @@
 name: Verify Windows local preview
 on:
   push:
-    branches: ['site/interactive-astro',main]
+    branches: [main]
     paths: ['serve.ps1','.github/workflows/windows-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   preview:
+    if: github.ref == 'refs/heads/main'
     runs-on: windows-latest
     timeout-minutes: 5
     steps:

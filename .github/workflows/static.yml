@@ -2,19 +2,23 @@ name: Verify and deploy Auradio website
 on:
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
+env:
+  ASTRO_TELEMETRY_DISABLED: '1'
 concurrency:
-  group: auradio-site-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  group: auradio-main-publish
+  cancel-in-progress: false
 jobs:
   build:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -23,9 +27,11 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci --ignore-scripts --no-fund
-      - run: npm test
-      - run: npm run check
-      - run: npm run build
+      - run: npm test && npm run check
+      - name: Build portable local preview
+        run: npm run build
+        env:
+          AURADIO_BASE: '/auradio_web'
       - run: npm audit --omit=dev --audit-level=high
       - name: Install browser test dependencies
         run: |
@@ -34,8 +40,24 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends fonts-noto-cjk
           fc-cache -f
-      - name: Verify production pages and interactions
+      - name: Verify complete portable interaction flow
         run: python scripts/browser-qa.py --output qa-output
+      - name: Package complete runnable website
+        run: python scripts/package-delivery.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auradio-complete-package
+          path: delivery-artifact/
+          retention-days: 14
+      - name: Build custom-domain root for production
+        run: npm run build
+        env:
+          AURADIO_BASE: '/'
+      - name: Check production root assets and interactions
+        run: |
+          node scripts/verify-root-build.mjs
+          python scripts/root-browser-qa.py
+          node --input-type=module -e "import fs from 'node:fs';fs.writeFileSync('dist/site-build.json',JSON.stringify({commit:process.env.GITHUB_SHA,branch:'main'})+'\n')"
       - name: Browser evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -43,22 +65,21 @@ jobs:
           name: auradio-browser-evidence
           path: qa-output/
           retention-days: 14
-      - name: Build artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: auradio-built-site
           path: dist/
           retention-days: 14
-      - name: Upload Pages site
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/
   deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
@@ -66,6 +87,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/configure-pages@v5
-      - name: Deploy verified build
+      - name: Deploy verified root build
         id: deployment
         uses: actions/deploy-pages@v5
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify actual public pages and resources
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: node scripts/check-live.mjs
