@@ -148,8 +148,13 @@ try:
             page.locator('.album-rail button').nth(2).evaluate('(b)=>b.click()')
             expect(album).to_have_attribute('data-selected-album','gem')
             expect(page.locator('.album-copy h2')).to_have_text('G.E.M.')
-            page.wait_for_timeout(750)
-            assert page.locator('.album-art-plane').count()==1
+            expect(page.locator('.album-art-plane')).to_have_count(3)
+            active_cover=page.locator('.album-art-plane[aria-hidden="false"]')
+            expect(active_cover).to_have_count(1)
+            expect(active_cover).to_have_attribute('data-cover-id','gem')
+            expect(active_cover).to_have_css('opacity','1')
+            for hidden in page.locator('.album-art-plane[aria-hidden="true"]').all():
+                expect(hidden).to_have_css('opacity','0')
             assert page.locator('.page-ambience>div').count()==2
             record('rapid selection settles correctly with bounded cover and background layers')
             page.locator('.album-room').scroll_into_view_if_needed()
@@ -223,7 +228,7 @@ try:
             record('without JavaScript, album identity and official listening link remain readable');nojs.close()
             fallback=browser.new_context(viewport={'width':390,'height':844});fixtures(fallback,blocked_art=True)
             fp=fallback.new_page();visit(fp,'experience/')
-            expect(fp.locator('.cover-unavailable')).to_be_visible()
+            expect(fp.locator('.album-art-plane[aria-hidden="false"] .cover-unavailable')).to_be_visible()
             expect(fp.locator('.album-room')).to_have_attribute('data-palette-state','fallback')
             expect(fp.locator('.official-source-link')).to_be_visible();overflow(fp,'blocked artwork mobile')
             record('network/artwork failure falls back honestly without blanking the album controls');fallback.close()
@@ -235,6 +240,6 @@ try:
         except Exception:
             try:page.screenshot(path=str(OUT/'failure.png'),full_page=False)
             except Exception:pass
-            (OUT/'failure.json').write_text(json.dumps({'checks':checks,'errors':errors,'console':console},ensure_ascii=False,indent=2));raise
+            (OUT/'failure.json').write_text(json.dumps({'checks':checks,'errors':errors,'console':console,'url':page.url,'cover_layers':page.locator('.album-art-plane').evaluate_all('(els)=>els.map(e=>({id:e.dataset.coverId,hidden:e.getAttribute("aria-hidden"),opacity:getComputedStyle(e).opacity}))')},ensure_ascii=False,indent=2));raise
         finally:browser.close()
 finally:server.shutdown();server.server_close()

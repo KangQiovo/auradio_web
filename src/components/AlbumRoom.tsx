@@ -100,11 +100,12 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
       }}>
         <div className="cover-halo" aria-hidden="true"/>
         <div className="album-art-stack">
-          <AnimatePresence initial={false}>
-            <motion.div key={active.id} className="album-art-plane" initial={{opacity:0,x:reduced?0:22,rotate:reduced?0:2}} animate={{opacity:1,x:0,rotate:0}} exit={{opacity:0,x:reduced?0:-18,rotate:reduced?0:-2}} transition={transition}>
-              {artErrors[active.id]?<div className="cover-unavailable"><span>G.E.M.</span><strong>{active.title}</strong><small>封面暂不可用</small></div>:<img src={active.artwork} alt={`${active.album} · 专辑封面`} width="600" height="600" decoding="async" referrerPolicy="no-referrer" loading="eager" onError={()=>setArtErrors(old=>({...old,[active.id]:true}))}/>}
-            </motion.div>
-          </AnimatePresence>
+          {/* Fixed layers make interrupted transitions reversible without exit-node accumulation. */}
+          {albums.map(album=><motion.div key={album.id} className="album-art-plane" data-cover-id={album.id} aria-hidden={active.id!==album.id}
+            initial={false} animate={{opacity:active.id===album.id?1:0,x:reduced||active.id===album.id?0:-18,rotate:reduced||active.id===album.id?0:-2}}
+            style={{zIndex:active.id===album.id?2:1,pointerEvents:active.id===album.id?'auto':'none'}} transition={transition}>
+            {artErrors[album.id]?<div className="cover-unavailable"><span>G.E.M.</span><strong>{album.title}</strong><small>封面暂不可用</small></div>:<img src={album.artwork} alt={`${album.album} · 专辑封面`} width="600" height="600" decoding="async" referrerPolicy="no-referrer" loading={active.id===album.id?'eager':'lazy'} onError={()=>setArtErrors(old=>({...old,[album.id]:true}))}/>}
+          </motion.div>)}
         </div>
         <div className="album-art-footer"><span>{active.format}</span><div><button type="button" className="icon-button" aria-label="上一张专辑" onClick={()=>choose(index-1)}><Icon name="arrow" style={{transform:'rotate(180deg)'}}/></button><span aria-hidden="true">0{index+1} / 03</span><button type="button" className="icon-button" aria-label="下一张专辑" onClick={()=>choose(index+1)}><Icon name="arrow"/></button></div></div>
       </div>
@@ -127,7 +128,7 @@ export default function AlbumRoom({compact=false}:{compact?:boolean}){
             <iframe key={active.id} title={`${active.catalogTitle} · ${active.provider} 官方试听`} src={active.embedUrl} height={active.id==='freedom'?110:175} width="100%" allow="autoplay; encrypted-media; fullscreen" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation" referrerPolicy="strict-origin-when-cross-origin" onLoad={()=>setPlayerLoaded(true)}/>
           </div>}
           <p className="preview-scope">{active.previewNote}</p>
-          <a className="official-source-link" href={active.sourceUrl} target="_blank" rel="noopener noreferrer">在 {active.provider} 收听完整作品 <Icon name="arrow"/></a>
+          <a className="official-source-link" href={active.sourceUrl} target="_blank" rel="noopener noreferrer">在 {active.provider} 打开作品 <Icon name="arrow"/></a>
           {player&&<p className="embed-help">播放器未显示或无法试听时，可通过上方链接前往官方平台。页面不会绕过平台限制。</p>}
         </div>
       </div>

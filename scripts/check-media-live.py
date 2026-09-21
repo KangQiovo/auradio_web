@@ -28,7 +28,7 @@ try:
                 page.get_by_role('tab',name='选择 '+name,exact=True).click()
                 page.wait_for_function('document.querySelector(".album-room").dataset.paletteState.match(/extracted|fallback/)')
                 page.wait_for_timeout(700)
-                record['artwork_loaded']=page.locator('.album-art-plane img').count()>0 and page.locator('.album-art-plane img').evaluate('(im)=>im.complete&&im.naturalWidth>100')
+                record['artwork_loaded']=page.locator('.album-art-plane[aria-hidden="false"] img').count()>0 and page.locator('.album-art-plane[aria-hidden="false"] img').evaluate('(im)=>im.complete&&im.naturalWidth>100')
                 record['palette_extracted']=page.locator('.album-room').get_attribute('data-palette-state')=='extracted'
                 record['official_link']=page.locator('.official-source-link').get_attribute('href')
                 page.locator('.album-room').scroll_into_view_if_needed()
