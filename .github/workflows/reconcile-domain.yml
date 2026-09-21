@@ -1,0 +1,99 @@
+name: Reconcile domain delivery with current main
+on:
+  push:
+    branches: ['fix/custom-domain-root']
+    paths: ['.github/workflows/reconcile-domain.yml']
+permissions:
+  contents: write
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Preserve concurrent main changes and resolve only the known overlap
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = '26785685317efc5e3a353a26b5e8ca3b3142d17b'
+          git merge --no-commit --no-ff origin/main || test -f .git/MERGE_HEAD
+          python - <<'PY'
+          import subprocess
+          from pathlib import Path
+          unresolved=set(subprocess.check_output(['git','diff','--name-only','--diff-filter=U'],text=True).splitlines())
+          assert unresolved <= {'README.md','scripts/browser-qa.py'}, unresolved
+          for name in ['README.md','scripts/browser-qa.py']:
+              Path(name).write_bytes(subprocess.check_output(['git','show',f'origin/main:{name}']))
+          def patch(name, changes):
+              path=Path(name);text=path.read_text()
+              for before,after in changes:
+                  assert text.count(before)==1, (name,before,text.count(before))
+                  text=text.replace(before,after)
+              path.write_text(text)
+          patch('scripts/browser-qa.py',[
+              ("public = Path(directory)\n    (public / 'auradio_web').symlink_to(ROOT / 'dist', target_is_directory=True)","public = ROOT / 'dist'"),
+              ("http://127.0.0.1:4173/auradio_web/","http://127.0.0.1:4173/"),
+              ("parsed.path.removeprefix('/auradio_web/')","parsed.path.lstrip('/')"),
+          ])
+          patch('README.md',[
+              ('默认 `http://127.0.0.1:4173/auradio_web/`','默认 `http://127.0.0.1:4173/`'),
+              ('12 个领域/边界/服务器测试。','14 个领域/边界/服务器及部署配置测试。'),
+              ('默认路径 `/auradio_web/`；自定义域名须修改 astro.config.mjs、robots 与 sitemap 后重新构建。','正式官网：https://auradio.kangqiovo.com/ 。Astro、CNAME、robots 和 sitemap 使用已绑定域名的根路径 `/`；本地启动器同时兼容旧 `/auradio_web/` 入口。部署后检查真实 HTTPS 构建标识、页面、样式、脚本和音频，报告保存在 Actions 产物中。'),
+          ])
+          patch('server.mjs',[
+              ("const prefix='/auradio_web/';","const prefix='/';\nconst legacyPrefix='/auradio_web/';"),
+              ("const parts=path.slice(prefix.length).split('/');","const parts=path.slice(path.startsWith(legacyPrefix)?legacyPrefix.length:prefix.length).split('/');\n  if(['src','scripts','tests','node_modules','docs','package.json','package-lock.json'].includes(parts[0]))return null;"),
+              ("if(path==='/'||path==='/auradio_web'){res.writeHead(302,{Location:prefix});return res.end();}","if(path==='/auradio_web'){res.writeHead(302,{Location:legacyPrefix});return res.end();}"),
+          ])
+          patch('serve.py',[
+              ("PREFIX = '/auradio_web/'","PREFIX = '/'\nLEGACY_PREFIX = '/auradio_web/'"),
+              ("if path in ('/', '/auradio_web'):","if path == '/auradio_web':"),
+              ("parts=path[len(PREFIX):].split('/')","parts=path[len(LEGACY_PREFIX) if path.startswith(LEGACY_PREFIX) else len(PREFIX):].split('/')\n        if parts[0] in ('src','scripts','tests','node_modules','docs','package.json','package-lock.json'):\n            self.send_error(404); return"),
+          ])
+          patch('serve.ps1',[
+              ('if(path=="/"||path=="/auradio_web")','if(path=="/auradio_web")'),
+              ('!path.StartsWith("/auradio_web/",StringComparison.Ordinal)','!path.StartsWith("/",StringComparison.Ordinal)'),
+              ('string relative=path.Substring(13);','string relative=path.StartsWith("/auradio_web/",StringComparison.Ordinal)?path.Substring(13):path.Substring(1);'),
+              ('$Url = "http://127.0.0.1:$ActualPort/auradio_web/"','$Url = "http://127.0.0.1:$ActualPort/"'),
+          ])
+          patch('tests/server.test.mjs',[
+              ("const home=await fetch(base+'/auradio_web/');","const rootHome=await fetch(base+'/');\n    assert.equal(rootHome.status,200);assert.match(await rootHome.text(),/听见/);\n    const rootWav=await fetch(base+'/audio/daylight.wav',{headers:{Range:'bytes=0-43'}});\n    assert.equal(rootWav.status,206);assert.equal((await rootWav.arrayBuffer()).byteLength,44);\n    const home=await fetch(base+'/auradio_web/');"),
+          ])
+          PY
+          git add README.md scripts/browser-qa.py server.mjs serve.py serve.ps1 tests/server.test.mjs
+          test -z "$(git diff --name-only --diff-filter=U)"
+          git diff --cached --stat
+      - run: npm ci --ignore-scripts --no-fund
+      - run: npm test && npm run check && npm run build
+      - run: npm audit --omit=dev --audit-level=high
+      - name: Browser dependencies
+        run: |
+          python -m pip install playwright==1.57.0
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+          fc-cache -f
+          if ! command -v google-chrome && ! command -v chromium; then python -m playwright install --with-deps chromium; fi
+      - run: python scripts/browser-qa.py --output qa-output
+      - name: Retain validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auradio-domain-reconciliation
+          path: |
+            qa-output/
+            dist/
+          retention-days: 14
+      - name: Save only a verified, conflict-free merge
+        run: |
+          git rm .github/workflows/reconcile-domain.yml
+          git commit -m '修复：保留主分支文案与启动器，并统一域名根路径及本地兼容入口'
+          git push origin HEAD:fix/custom-domain-root
