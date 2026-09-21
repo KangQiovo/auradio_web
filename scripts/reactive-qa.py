@@ -25,7 +25,7 @@ def tone():
         f.writeframes(raw)
     return buf.getvalue()
 TONE=tone();payload=base64.b64encode(TONE).decode()
-FRAME='''<!doctype html><meta charset="utf-8"><title>Test oscillator</title><button id="start" disabled>Play test tone</button><audio id="a" loop src="data:audio/wav;base64,'''+payload+'''"></audio><script>const button=document.querySelector('#start');button.onclick=()=>document.querySelector('#a').play();button.disabled=false;</script>'''
+FRAME='''<!doctype html><meta charset="utf-8"><title>Test oscillator</title><button id="start" disabled>Play test tone</button><audio id="a" loop src="data:audio/wav;base64,'''+payload+'''"></audio><script>const button=document.querySelector('#start');window.fixture={starts:0,error:null};button.onclick=async()=>{window.fixture.starts++;try{await document.querySelector('#a').play()}catch(e){window.fixture.error=e.name}};button.disabled=false;</script>'''
 def fixtures(context):
     def route(r):
         u=r.request.url
@@ -37,12 +37,20 @@ def visit(page,path='experience/'):
     page.goto(base+path,wait_until='domcontentloaded');expect(page.locator('h1')).to_be_visible()
     page.wait_for_function('Array.from(document.querySelectorAll(\'astro-island[client="load"]\')).every(e=>!e.hasAttribute("ssr"))')
 def play_fixture(page):
-    # The large data-URL fixture parses after the visible button. The button remains disabled
-    # until its handler is installed; click only then, and prove actual playback before FFT.
+    # Wait for the selected cross-origin document, then use a real keyboard activation.
+    # An iframe's internal button can be stable while its parent is still moving after
+    # an album transition. Keyboard activation does not depend on that screen position.
+    # This still exercises the browser media pipeline, never a mocked analyser.
     handle=page.locator('.official-preview iframe').element_handle()
     frame=handle.content_frame()
-    expect(frame.locator('#start')).to_be_enabled()
-    frame.locator('#start').click()
+    frame.wait_for_load_state('domcontentloaded')
+    button=frame.locator('#start')
+    expect(button).to_be_enabled()
+    button.focus()
+    expect(button).to_be_focused()
+    button.press('Enter')
+    frame.wait_for_function('window.fixture.starts === 1')
+    assert frame.evaluate('window.fixture.error') is None
     frame.wait_for_function('!document.querySelector("audio").paused && document.querySelector("audio").currentTime>.05')
 def field(page):
     el=page.locator('.audio-studio .field-canvas');el.scroll_into_view_if_needed()
@@ -110,6 +118,10 @@ with sync_playwright() as p:
         # Switch to each of the three provider identities without restarting the capture service.
         for name in ['自由的你','G.E.M.']:
             page.get_by_role('tab',name='选择 '+name,exact=True).click()
+            expect(page.locator('.official-preview iframe')).to_have_count(0)
+            meter.scroll_into_view_if_needed()
+            # The previous player really stopped; stale bars cannot pass the next assertion.
+            page.wait_for_function('Number(document.querySelector(".live-spectrum-panel canvas").dataset.rms)<.001')
             page.get_by_role('button',name='打开官方试听').click()
             play_fixture(page)
             print('CAPTURE_SWITCH',name,page.frame_locator('.official-preview iframe').locator('audio').evaluate('(a)=>({paused:a.paused,time:a.currentTime,ready:a.readyState,duration:a.duration})'),flush=True)
@@ -151,6 +163,8 @@ with sync_playwright() as p:
         record('no uncaught application exceptions in verified flows')
         (OUT/'checks.json').write_text(json.dumps({'checks':checks,'count':len(checks),'browser':browser.version,'errors':errors,'native_tab_capture':'real browser capture of generated test tones','songs':'not used as test audio'},ensure_ascii=False,indent=2))
     except Exception:
+        import traceback
+        traceback.print_exc()  # Keep the first failure even if evidence collection also fails.
         diagnostics={'frames':[],'capture':page.evaluate("({contexts:(window.__qaContexts||[]).map(c=>({state:c.state,time:c.currentTime,rate:c.sampleRate})),streams:(window.__qaStreams||[]).map(s=>s.getTracks().map(t=>({kind:t.kind,enabled:t.enabled,muted:t.muted,state:t.readyState,settings:t.getSettings()}))),meters:Array.from(document.querySelectorAll('.spectrum-strip canvas')).map(e=>({rms:e.dataset.rms,peak:e.dataset.peakBand,rect:e.getBoundingClientRect().toJSON()}))})")}
         for frame in page.frames:
             try:diagnostics['frames'].append({'url':frame.url,'media':frame.evaluate("Array.from(document.querySelectorAll('audio')).map(a=>({paused:a.paused,time:a.currentTime,duration:a.duration,ready:a.readyState,muted:a.muted,error:a.error?.message}))")})
