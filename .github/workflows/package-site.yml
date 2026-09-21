@@ -1,0 +1,68 @@
+name: Package and verify Auradio website
+on:
+  push:
+    branches: ['site/interactive-astro']
+    paths: ['.github/workflows/package-site.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: auradio-package
+  cancel-in-progress: false
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply public-only editorial update
+        run: |
+          if test -f scripts/prepare-public-delivery.py; then python scripts/prepare-public-delivery.py; fi
+      - run: npm ci --ignore-scripts --no-fund
+      - run: npm test && npm run check && npm run build
+      - run: npm audit --omit=dev --audit-level=high
+      - name: Prepare browser and CJK rendering
+        run: |
+          python -m pip install playwright==1.57.0
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-noto-cjk
+          if ! command -v google-chrome && ! command -v chromium; then python -m playwright install --with-deps chromium; fi
+      - name: Verify real browser interactions
+        run: python scripts/browser-qa.py --output qa-output
+      - name: Archive readable website source
+        if: always()
+        run: |
+          python - <<'PY'
+          import pathlib,tarfile
+          root=pathlib.Path('.')
+          with tarfile.open('/tmp/website-checked-source.tar.gz','w:gz') as out:
+            for p in root.rglob('*'):
+              if p.is_file() and not any(x in p.parts for x in ('.git','node_modules','dist','.astro','qa-output','__pycache__','.delivery')) and p.suffix not in ('.wav','.map'):
+                out.add(p,arcname=str(p))
+          PY
+      - name: Save rendered evidence and complete build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auradio-final-check
+          path: |
+            qa-output/
+            dist/
+            /tmp/website-checked-source.tar.gz
+          retention-days: 3
+      - name: Save verified source in website branch
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m '官网：保存已核验的交互网站与精简公开文案'
+            git push origin HEAD:site/interactive-astro
+          fi
